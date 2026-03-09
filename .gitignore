@@ -1,4 +1,7 @@
 
+# Test vault (local dev only — contains personal notes and build output)
+test-vault/
+
 # From plugin template
 # vscode
 .vscode 
