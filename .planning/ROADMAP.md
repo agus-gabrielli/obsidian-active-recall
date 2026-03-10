@@ -29,7 +29,10 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. esbuild watch mode rebuilds and hot-reload restarts the plugin in under 2 seconds on file save
   3. manifest.json has plugin ID `ai-active-recall`, correct minAppVersion, and passes the Obsidian submission format check
   4. A smoke-test requestUrl() call to an external endpoint succeeds on both desktop and mobile (no CORS error, no crash)
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 01-01-PLAN.md - Install deps, rewrite scaffold to ActiveRecallPlugin, verify plugin loads + requestUrl() smoke test passes
 
 ### Phase 2: Settings
 **Goal**: Users can configure the plugin fully - provider, API key, model, language, output toggles, and custom instructions - with the configuration persisting across Obsidian restarts
@@ -83,7 +86,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/? | Not started | - |
+| 1. Foundation | 0/1 | Not started | - |
 | 2. Settings | 0/? | Not started | - |
 | 3. Generation Pipeline | 0/? | Not started | - |
 | 4. Commands and Sidebar | 0/? | Not started | - |
