@@ -43,7 +43,10 @@ Plans:
   2. API key field is masked (password input) and the settings UI shows a visible warning about Git/data.json exposure risk
   3. All settings survive an Obsidian restart - values entered in one session appear correctly in the next
   4. Toggling hints, reference answers, or concept map off and back on saves correctly without resetting other settings
-**Plans**: TBD
+**Plans**: 1 plan
+
+Plans:
+- [ ] 02-01-PLAN.md - Populate settings interface/defaults, implement full settings tab display(), remove smoke test
 
 ### Phase 3: Generation Pipeline
 **Goal**: A user can trigger generation from the command palette and get a correctly formatted _self-test.md written to the selected folder, with token budget enforcement, batch+synthesize for large folders, and clear progress and error feedback throughout
