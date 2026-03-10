@@ -91,43 +91,41 @@
 
 ## Traceability
 
-*Populated during roadmap creation.*
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GEN-01 | — | Pending |
-| GEN-02 | — | Pending |
-| GEN-03 | — | Pending |
-| GEN-04 | — | Pending |
-| GEN-05 | — | Pending |
-| GEN-06 | — | Pending |
-| GEN-07 | — | Pending |
-| CTX-01 | — | Pending |
-| CTX-02 | — | Pending |
-| CTX-03 | — | Pending |
-| SET-01 | — | Pending |
-| SET-02 | — | Pending |
-| SET-03 | — | Pending |
-| SET-04 | — | Pending |
-| SET-05 | — | Pending |
-| SET-06 | — | Pending |
-| SET-07 | — | Pending |
-| SET-08 | — | Pending |
-| CMD-01 | — | Pending |
-| CMD-02 | — | Pending |
-| CMD-03 | — | Pending |
-| UI-01 | — | Pending |
-| UI-02 | — | Pending |
-| FB-01 | — | Pending |
-| FB-02 | — | Pending |
-| DIST-01 | — | Pending |
-| DIST-02 | — | Pending |
+| GEN-01 | Phase 3 | Pending |
+| GEN-02 | Phase 3 | Pending |
+| GEN-03 | Phase 3 | Pending |
+| GEN-04 | Phase 3 | Pending |
+| GEN-05 | Phase 3 | Pending |
+| GEN-06 | Phase 3 | Pending |
+| GEN-07 | Phase 3 | Pending |
+| CTX-01 | Phase 3 | Pending |
+| CTX-02 | Phase 3 | Pending |
+| CTX-03 | Phase 3 | Pending |
+| SET-01 | Phase 2 | Pending |
+| SET-02 | Phase 2 | Pending |
+| SET-03 | Phase 2 | Pending |
+| SET-04 | Phase 2 | Pending |
+| SET-05 | Phase 2 | Pending |
+| SET-06 | Phase 2 | Pending |
+| SET-07 | Phase 2 | Pending |
+| SET-08 | Phase 2 | Pending |
+| CMD-01 | Phase 4 | Pending |
+| CMD-02 | Phase 4 | Pending |
+| CMD-03 | Phase 4 | Pending |
+| UI-01 | Phase 4 | Pending |
+| UI-02 | Phase 4 | Pending |
+| FB-01 | Phase 3 | Pending |
+| FB-02 | Phase 3 | Pending |
+| DIST-01 | Phase 1 | Pending |
+| DIST-02 | Phase 5 | Pending |
 
 **Coverage:**
 - v1 requirements: 27 total
-- Mapped to phases: 0
-- Unmapped: 27 ⚠️
+- Mapped to phases: 27
+- Unmapped: 0 - all requirements covered
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-09 after initial definition*
+*Last updated: 2026-03-09 after roadmap creation*
