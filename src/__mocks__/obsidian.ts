@@ -12,7 +12,7 @@ export class TFile {
     this.path = path;
     this.extension = extension;
     const parts = path.split('/');
-    const filename = parts[parts.length - 1];
+    const filename = parts[parts.length - 1] ?? '';
     this.basename = filename.endsWith(`.${extension}`)
       ? filename.slice(0, -(extension.length + 1))
       : filename;
