@@ -64,10 +64,10 @@ function buildFormattingInstructions(settings: ActiveRecallSettings): {
 } {
     return {
         hintInstruction: settings.generateHints
-            ? `- After each question, add a collapsible hint using this exact callout syntax:\n  > [!hint]-\n  > Your hint text here`
+            ? `- After each question, add a collapsible hint using this exact callout syntax:\n  > [!hint]-\n  > Your hint text here\n  (blank line required after the callout block)`
             : '',
         checkInstruction: settings.generateReferenceAnswers
-            ? `- After each hint (or question if hints are disabled), add a collapsible reference answer:\n  > [!check]-\n  > Your reference answer here`
+            ? `- After each hint (or question if hints are disabled), add a collapsible reference answer with a blank line before it:\n  \n  > [!check]-\n  > Your reference answer here`
             : '',
         languageInstruction: settings.language
             ? `\nWrite all output in ${settings.language}.`
@@ -88,11 +88,12 @@ export function buildBatchPrompt(notes: NoteSource[], settings: ActiveRecallSett
 
     const conceptMapInstruction = settings.generateConceptMap
         ? `## Concept Map
-Output a concept map as a 2-level bullet hierarchy showing the main concepts and their key relationships.
+List the main concepts covered as a flat bullet list — concept names only, no explanations or sub-bullets.
 Format:
-- Main concept
-  - Related sub-concept or relationship
-(Max 2 levels. Then add a horizontal rule: ---)
+- Concept A
+- Concept B
+- Concept C
+(Then add a horizontal rule: ---)
 
 `
         : '';
@@ -128,7 +129,7 @@ export function buildSynthesisPrompt(partialOutputs: string[], settings: ActiveR
         buildFormattingInstructions(settings);
 
     const conceptMapInstruction = settings.generateConceptMap
-        ? `Include a ## Concept Map section at the top as a 2-level bullet hierarchy, followed by a horizontal rule (---).
+        ? `Include a ## Concept Map section at the top as a flat bullet list of concept names only (no explanations or sub-bullets), followed by a horizontal rule (---).
 
 `
         : '';
