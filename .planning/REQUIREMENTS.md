@@ -7,19 +7,19 @@
 
 ### Core Generation
 
-- [ ] **GEN-01**: User can collect all top-level `.md` files from a selected folder (non-recursive, excludes `_self-test.md` itself)
-- [ ] **GEN-02**: Plugin generates open-ended recall questions ordered from foundational to advanced
-- [ ] **GEN-03**: Questions are categorized into Conceptual, Relationships, and Application sections when content supports it; categories are omitted when content is too simple or narrow
-- [ ] **GEN-04**: Each question includes a collapsible hint using Obsidian callout syntax (`> [!hint]-`)
-- [ ] **GEN-05**: Each question includes a collapsible reference answer using Obsidian callout syntax (`> [!check]-`)
-- [ ] **GEN-06**: Plugin generates a brief text-based concept map before questions when content supports it
-- [ ] **GEN-07**: Output is written to `_self-test.md` in the selected folder; existing file is overwritten on regeneration without backup
+- [x] **GEN-01**: User can collect all top-level `.md` files from a selected folder (non-recursive, excludes `_self-test.md` itself)
+- [x] **GEN-02**: Plugin generates open-ended recall questions ordered from foundational to advanced
+- [x] **GEN-03**: Questions are categorized into Conceptual, Relationships, and Application sections when content supports it; categories are omitted when content is too simple or narrow
+- [x] **GEN-04**: Each question includes a collapsible hint using Obsidian callout syntax (`> [!hint]-`)
+- [x] **GEN-05**: Each question includes a collapsible reference answer using Obsidian callout syntax (`> [!check]-`)
+- [x] **GEN-06**: Plugin generates a brief text-based concept map before questions when content supports it
+- [x] **GEN-07**: Output is written to `_self-test.md` in the selected folder; existing file is overwritten on regeneration without backup
 
 ### Context Window Management
 
-- [ ] **CTX-01**: Plugin estimates token count using `chars / 4` heuristic before constructing the API call
-- [ ] **CTX-02**: If all note content fits within the token budget, a single API call is made
-- [ ] **CTX-03**: If content exceeds the token budget, notes are split into batches; each batch generates partial questions; a synthesis call deduplicates, reorders, and produces the final unified output
+- [x] **CTX-01**: Plugin estimates token count using `chars / 4` heuristic before constructing the API call
+- [x] **CTX-02**: If all note content fits within the token budget, a single API call is made
+- [x] **CTX-03**: If content exceeds the token budget, notes are split into batches; each batch generates partial questions; a synthesis call deduplicates, reorders, and produces the final unified output
 
 ### Settings
 
@@ -45,8 +45,8 @@
 
 ### Feedback
 
-- [ ] **FB-01**: Plugin shows a progress indicator during generation (status bar message or modal spinner); the user knows a long-running operation is in progress
-- [ ] **FB-02**: Plugin shows an actionable error message when an API call fails (wrong key, rate limit, network error, context exceeded); raw API error strings are not shown directly to users
+- [x] **FB-01**: Plugin shows a progress indicator during generation (status bar message or modal spinner); the user knows a long-running operation is in progress
+- [x] **FB-02**: Plugin shows an actionable error message when an API call fails (wrong key, rate limit, network error, context exceeded); raw API error strings are not shown directly to users
 
 ### Distribution
 
@@ -93,16 +93,16 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GEN-01 | Phase 3 | Pending |
-| GEN-02 | Phase 3 | Pending |
-| GEN-03 | Phase 3 | Pending |
-| GEN-04 | Phase 3 | Pending |
-| GEN-05 | Phase 3 | Pending |
-| GEN-06 | Phase 3 | Pending |
-| GEN-07 | Phase 3 | Pending |
-| CTX-01 | Phase 3 | Pending |
-| CTX-02 | Phase 3 | Pending |
-| CTX-03 | Phase 3 | Pending |
+| GEN-01 | Phase 3 | Complete |
+| GEN-02 | Phase 3 | Complete |
+| GEN-03 | Phase 3 | Complete |
+| GEN-04 | Phase 3 | Complete |
+| GEN-05 | Phase 3 | Complete |
+| GEN-06 | Phase 3 | Complete |
+| GEN-07 | Phase 3 | Complete |
+| CTX-01 | Phase 3 | Complete |
+| CTX-02 | Phase 3 | Complete |
+| CTX-03 | Phase 3 | Complete |
 | SET-01 | Phase 2 | Complete |
 | SET-02 | Phase 2 | Complete |
 | SET-03 | Phase 2 | Complete |
@@ -116,8 +116,8 @@
 | CMD-03 | Phase 4 | Pending |
 | UI-01 | Phase 4 | Pending |
 | UI-02 | Phase 4 | Pending |
-| FB-01 | Phase 3 | Pending |
-| FB-02 | Phase 3 | Pending |
+| FB-01 | Phase 3 | Complete |
+| FB-02 | Phase 3 | Complete |
 | DIST-01 | Phase 1 | Complete |
 | DIST-02 | Phase 5 | Pending |
 

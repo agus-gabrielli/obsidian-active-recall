@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Phase 2 finished; ready to begin Phase 3 (Generation)
-stopped_at: Phase 3 context gathered
-last_updated: "2026-03-10T02:11:30.125Z"
+stopped_at: Completed 03-generation-pipeline 03-01-PLAN.md
+last_updated: "2026-03-10T02:39:21.664Z"
 last_activity: 2026-03-10 - 02-01 all 3 tasks done including Obsidian human-verify (all 5 checks passed)
 progress:
   total_phases: 5
   completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 5
+  completed_plans: 3
   percent: 40
 ---
 
@@ -51,6 +51,7 @@ Progress: [####░░░░░░] 40%
 - Trend: improving
 
 *Updated after each plan completion*
+| Phase 03-generation-pipeline P01 | 8 | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -69,6 +70,9 @@ Recent decisions affecting current work:
 - [Phase 02-settings]: Custom instructions textarea saves on blur only - not onChange - to avoid excessive saveData calls on every keystroke
 - [Phase 02-settings]: API key masked via inputEl.type = 'password' mutation inside addText callback - Obsidian has no native password field API
 - [Phase 02-settings]: Provider dropdown locked via setDisabled(true) on the Setting component wrapper (not the inner dropdown)
+- [Phase 03-generation-pipeline]: jest.config.cjs uses CommonJS format because package.json has type:module - mixing ESM and CJS requires explicit .cjs extension
+- [Phase 03-generation-pipeline]: Obsidian mock exports createMockApp() factory for per-test vault behavior overrides; createMockStatusBarItem() for status bar testing
+- [Phase 03-generation-pipeline]: test.todo() stubs used in generation.test.ts with commented-out import - Plan 02 uncommenting signals implementation readiness without rewriting structure
 
 ### Pending Todos
 
@@ -80,6 +84,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-10T02:11:30.115Z
-Stopped at: Phase 3 context gathered
-Resume file: .planning/phases/03-generation-pipeline/03-CONTEXT.md
+Last session: 2026-03-10T02:39:21.662Z
+Stopped at: Completed 03-generation-pipeline 03-01-PLAN.md
+Resume file: None
