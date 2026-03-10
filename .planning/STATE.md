@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Phase 2 finished; ready to begin Phase 3 (Generation)
-stopped_at: Completed 03-generation-pipeline 03-01-PLAN.md
-last_updated: "2026-03-10T02:39:21.664Z"
+stopped_at: Completed 03-generation-pipeline 03-02-PLAN.md
+last_updated: "2026-03-10T02:45:37.600Z"
 last_activity: 2026-03-10 - 02-01 all 3 tasks done including Obsidian human-verify (all 5 checks passed)
 progress:
   total_phases: 5
   completed_phases: 2
   total_plans: 5
-  completed_plans: 3
+  completed_plans: 4
   percent: 40
 ---
 
@@ -52,6 +52,7 @@ Progress: [####░░░░░░] 40%
 
 *Updated after each plan completion*
 | Phase 03-generation-pipeline P01 | 8 | 2 tasks | 5 files |
+| Phase 03-generation-pipeline P02 | 4min | 3 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -73,6 +74,8 @@ Recent decisions affecting current work:
 - [Phase 03-generation-pipeline]: jest.config.cjs uses CommonJS format because package.json has type:module - mixing ESM and CJS requires explicit .cjs extension
 - [Phase 03-generation-pipeline]: Obsidian mock exports createMockApp() factory for per-test vault behavior overrides; createMockStatusBarItem() for status bar testing
 - [Phase 03-generation-pipeline]: test.todo() stubs used in generation.test.ts with commented-out import - Plan 02 uncommenting signals implementation readiness without rewriting structure
+- [Phase 03-generation-pipeline]: FB-02 tested via classifyError() directly - cleaner than spying on Notice constructor internals
+- [Phase 03-generation-pipeline]: buildFormattingInstructions extracted as private helper shared by buildBatchPrompt and buildSynthesisPrompt to eliminate prompt instruction duplication
 
 ### Pending Todos
 
@@ -84,6 +87,6 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-03-10T02:39:21.662Z
-Stopped at: Completed 03-generation-pipeline 03-01-PLAN.md
+Last session: 2026-03-10T02:45:31.973Z
+Stopped at: Completed 03-generation-pipeline 03-02-PLAN.md
 Resume file: None

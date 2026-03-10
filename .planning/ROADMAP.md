@@ -96,6 +96,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 |-------|----------------|--------|-----------|
 | 1. Foundation | 1/1 | Complete | 2026-03-09 |
 | 2. Settings | 1/1 | Complete   | 2026-03-10 |
-| 3. Generation Pipeline | 1/3 | In Progress|  |
+| 3. Generation Pipeline | 2/3 | In Progress|  |
 | 4. Commands and Sidebar | 0/? | Not started | - |
 | 5. Polish and Release | 0/? | Not started | - |
