@@ -77,7 +77,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 04-01-PLAN.md - Extend obsidian mock and write 10 failing sidebar tests (Wave 1)
+- [x] 04-01-PLAN.md - Extend obsidian mock and write 10 failing sidebar tests (Wave 1)
 - [ ] 04-02-PLAN.md - Implement src/sidebar.ts with ActiveRecallSidebarView and helper functions (Wave 2)
 - [ ] 04-03-PLAN.md - Wire sidebar, CMD-02, CMD-03, ribbon into main.ts; human-verify in Obsidian (Wave 3)
 
@@ -102,5 +102,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 1. Foundation | 1/1 | Complete | 2026-03-09 |
 | 2. Settings | 1/1 | Complete   | 2026-03-10 |
 | 3. Generation Pipeline | 3/3 | Complete | 2026-03-10 |
-| 4. Commands and Sidebar | 0/3 | Not started | - |
+| 4. Commands and Sidebar | 1/3 | In Progress | - |
 | 5. Polish and Release | 0/? | Not started | - |

@@ -35,13 +35,13 @@
 ### Commands & Entry Points
 
 - [x] **CMD-01**: Command palette entry: "Generate Self-Test for Current Folder" — generates `_self-test.md` for the folder containing the active note
-- [ ] **CMD-02**: Command palette entry: "Open Active Recall Panel" — opens or focuses the sidebar panel
-- [ ] **CMD-03**: Folder context menu item: "Generate Self-Test" — available on right-click of any folder in the file explorer
+- [x] **CMD-02**: Command palette entry: "Open Active Recall Panel" — opens or focuses the sidebar panel
+- [x] **CMD-03**: Folder context menu item: "Generate Self-Test" — available on right-click of any folder in the file explorer
 
 ### Sidebar Panel
 
-- [ ] **UI-01**: Sidebar panel (leaf view) lists all vault folders that already have a `_self-test.md`, showing folder name, last-generated date, and a Regenerate button
-- [ ] **UI-02**: Sidebar panel lists vault folders that do not have a `_self-test.md`, showing a Generate button
+- [x] **UI-01**: Sidebar panel (leaf view) lists all vault folders that already have a `_self-test.md`, showing folder name, last-generated date, and a Regenerate button
+- [x] **UI-02**: Sidebar panel lists vault folders that do not have a `_self-test.md`, showing a Generate button
 
 ### Feedback
 
@@ -112,10 +112,10 @@
 | SET-07 | Phase 2 | Complete |
 | SET-08 | Phase 2 | Complete |
 | CMD-01 | Phase 3 | Complete |
-| CMD-02 | Phase 4 | Pending |
-| CMD-03 | Phase 4 | Pending |
-| UI-01 | Phase 4 | Pending |
-| UI-02 | Phase 4 | Pending |
+| CMD-02 | Phase 4 | Complete |
+| CMD-03 | Phase 4 | Complete |
+| UI-01 | Phase 4 | Complete |
+| UI-02 | Phase 4 | Complete |
 | FB-01 | Phase 3 | Complete |
 | FB-02 | Phase 3 | Complete |
 | DIST-01 | Phase 1 | Complete |
