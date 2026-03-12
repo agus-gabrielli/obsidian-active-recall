@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 04-commands-and-sidebar (complete)
-current_plan: 04-03 (complete)
-status: planning
-last_updated: "2026-03-12T22:10:05.665Z"
+current_phase: 05-polish-and-release
+current_plan: 05-01 (complete)
+status: in-progress
+last_updated: "2026-03-12T22:34:23Z"
 progress:
   total_phases: 5
   completed_phases: 4
-  total_plans: 8
-  completed_plans: 8
+  total_plans: 9
+  completed_plans: 9
 ---
 
 # Session State
@@ -23,11 +23,11 @@ See: .planning/PROJECT.md
 
 **Milestone:** v1.0 milestone
 **Milestone:** v1.0 milestone
-**Current phase:** 04-commands-and-sidebar (complete)
-**Current plan:** 04-03 (complete)
-**Status:** Ready to plan
+**Current phase:** 05-polish-and-release
+**Current plan:** 05-01 (complete)
+**Status:** In progress
 
-**Phase 04 Progress:** Plan 03 of 3 complete (phase done)
+**Phase 05 Progress:** Plan 01 of N complete
 
 ## Decisions
 
@@ -39,6 +39,8 @@ See: .planning/PROJECT.md
 - 2026-03-12 (04-03): refreshSidebarIfOpen helper in main.ts provides safe view refresh without holding stale reference
 - 2026-03-12 (04-03): Vault create/delete listeners on basename === '_self-test' provide auto-refresh scoped to self-test files only
 - 2026-03-12 (04-03): esbuild onEnd plugin copies styles.css to test vault to keep CSS in sync on every build
+- 2026-03-12 (05-01): classifyError signature extended to classifyError(status, apiError?) - optional second arg preserves backwards compatibility
+- 2026-03-12 (05-01): 400 branch placed before the >= 500 check so context_length_exceeded is handled distinctly from server errors
 
 ## Session Log
 
@@ -49,3 +51,5 @@ See: .planning/PROJECT.md
 - 2026-03-11: Stopped at - Completed 04-02-PLAN.md
 - 2026-03-12: Executed 04-03 (commands and sidebar integration) - 2 tasks, 2 commits (f5b51fd, 3a297d3) - human-verified all 6 checks in Obsidian
 - 2026-03-12: Stopped at - Completed 04-03-PLAN.md (Phase 04 complete)
+- 2026-03-12: Executed 05-01 (error message polish and manifest update) - 2 tasks, 3 commits (8a31d3f RED, e9185ea GREEN, 1559400 manifest)
+- 2026-03-12: Stopped at - Completed 05-01-PLAN.md

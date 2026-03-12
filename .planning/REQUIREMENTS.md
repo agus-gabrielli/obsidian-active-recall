@@ -51,7 +51,7 @@
 ### Distribution
 
 - [x] **DIST-01**: `manifest.json` meets Obsidian community store requirements: plugin ID `ai-active-recall` (no `obsidian-` prefix), `minAppVersion` set appropriately, `isDesktopOnly` accurate
-- [ ] **DIST-02**: README covers installation steps and API key configuration
+- [x] **DIST-02**: README covers installation steps and API key configuration
 
 ## v2 Requirements
 
@@ -119,7 +119,7 @@
 | FB-01 | Phase 3 | Complete |
 | FB-02 | Phase 3 | Complete |
 | DIST-01 | Phase 1 | Complete |
-| DIST-02 | Phase 5 | Pending |
+| DIST-02 | Phase 5 | Complete |
 
 **Coverage:**
 - v1 requirements: 27 total
