@@ -168,9 +168,15 @@ export class LLMError extends Error {
     }
 }
 
-export function classifyError(status: number): string {
+export function classifyError(status: number, apiError?: unknown): string {
     if (status === 401) return 'Invalid API key. Check your key in Settings.';
-    if (status === 429) return 'Rate limit reached. Please wait a moment and try again.';
+    if (status === 429) return 'Rate limit reached. Wait a moment, then try again.';
+    if (status === 400) {
+        const code = (apiError as { error?: { code?: string } })?.error?.code;
+        if (code === 'context_length_exceeded') {
+            return 'Folder is too large to process. Try removing some notes or reducing note length.';
+        }
+    }
     if (status >= 500) return 'OpenAI service error. Please try again later.';
     return 'Network error. Check your internet connection.';
 }
@@ -270,7 +276,7 @@ export class GenerationService {
             new Notice(`Self-test written to ${folderName}/`);
         } catch (err) {
             const msg = err instanceof LLMError
-                ? classifyError(err.status)
+                ? classifyError(err.status, err.apiError)
                 : 'Generation failed. Check your settings and try again.';
             new Notice(msg);
         } finally {
