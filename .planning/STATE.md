@@ -2,10 +2,10 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 04-commands-and-sidebar
+current_phase: 04-commands-and-sidebar (complete)
 current_plan: 04-03 (complete)
-status: idle
-last_updated: "2026-03-12T00:00:00.000Z"
+status: planning
+last_updated: "2026-03-12T22:10:05.665Z"
 progress:
   total_phases: 5
   completed_phases: 4
@@ -25,7 +25,7 @@ See: .planning/PROJECT.md
 **Milestone:** v1.0 milestone
 **Current phase:** 04-commands-and-sidebar (complete)
 **Current plan:** 04-03 (complete)
-**Status:** Idle - Phase 04 complete
+**Status:** Ready to plan
 
 **Phase 04 Progress:** Plan 03 of 3 complete (phase done)
 
