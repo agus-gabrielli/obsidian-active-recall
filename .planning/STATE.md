@@ -3,9 +3,9 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_phase: 05-polish-and-release
-current_plan: 05-01 (complete)
+current_plan: 05-02 (complete)
 status: in-progress
-last_updated: "2026-03-12T22:34:23Z"
+last_updated: "2026-03-12T22:49:00Z"
 progress:
   total_phases: 5
   completed_phases: 4
@@ -24,10 +24,10 @@ See: .planning/PROJECT.md
 **Milestone:** v1.0 milestone
 **Milestone:** v1.0 milestone
 **Current phase:** 05-polish-and-release
-**Current plan:** 05-01 (complete)
+**Current plan:** 05-02 (complete)
 **Status:** In progress
 
-**Phase 05 Progress:** Plan 01 of N complete
+**Phase 05 Progress:** Plan 02 of N complete
 
 ## Decisions
 
@@ -41,6 +41,9 @@ See: .planning/PROJECT.md
 - 2026-03-12 (04-03): esbuild onEnd plugin copies styles.css to test vault to keep CSS in sync on every build
 - 2026-03-12 (05-01): classifyError signature extended to classifyError(status, apiError?) - optional second arg preserves backwards compatibility
 - 2026-03-12 (05-01): 400 branch placed before the >= 500 check so context_length_exceeded is handled distinctly from server errors
+- 2026-03-12 (05-02): README uses plain prose only for v1 - no screenshots, badges, or GIFs
+- 2026-03-12 (05-02): API key setup embedded as a numbered step inside Installation (not a separate section)
+- 2026-03-12 (05-02): Three entry points (command palette, context menu, sidebar) all covered in How to use
 
 ## Session Log
 
@@ -53,3 +56,5 @@ See: .planning/PROJECT.md
 - 2026-03-12: Stopped at - Completed 04-03-PLAN.md (Phase 04 complete)
 - 2026-03-12: Executed 05-01 (error message polish and manifest update) - 2 tasks, 3 commits (8a31d3f RED, e9185ea GREEN, 1559400 manifest)
 - 2026-03-12: Stopped at - Completed 05-01-PLAN.md
+- 2026-03-12: Executed 05-02 (README rewrite for non-technical users) - 1 task + 1 human-verify, 1 commit (1d87015) - human approved all 7 checks
+- 2026-03-12: Stopped at - Completed 05-02-PLAN.md
