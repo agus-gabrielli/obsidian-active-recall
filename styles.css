@@ -1,8 +1,70 @@
-/*
+.active-recall-panel {
+  padding: 8px 12px;
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+.active-recall-header {
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
 
-If your plugin does not need CSS, delete this file.
+.active-recall-title {
+  margin: 0 0 4px 0;
+  font-size: 1em;
+  font-weight: 600;
+}
 
-*/
+.active-recall-description {
+  margin: 0;
+  font-size: 0.8em;
+  color: var(--text-muted);
+}
+
+.active-recall-section {
+  margin-bottom: 20px;
+}
+
+.active-recall-section-label {
+  margin: 0 0 6px 0;
+  font-size: 0.75em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.active-recall-folder-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 0;
+  border-top: 1px solid var(--background-modifier-border);
+  gap: 8px;
+}
+
+.active-recall-folder-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.active-recall-folder-name {
+  font-size: 0.9em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.active-recall-date {
+  font-size: 0.75em;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.active-recall-btn {
+  flex-shrink: 0;
+  font-size: 0.8em;
+  padding: 3px 10px;
+  cursor: pointer;
+}

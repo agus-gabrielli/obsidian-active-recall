@@ -144,30 +144,36 @@ export class ActiveRecallSidebarView extends ItemView {
 
     const container = this.contentEl.createDiv({ cls: 'active-recall-panel' });
 
+    const header = container.createDiv({ cls: 'active-recall-header' });
+    header.createEl('h3', { text: 'Active Recall', cls: 'active-recall-title' });
+    header.createEl('p', { text: 'Self-test files for your note folders.', cls: 'active-recall-description' });
+
     if (withSelfTest.length > 0) {
       const section = container.createDiv({ cls: 'active-recall-section' });
-      section.createEl('h4', { text: 'Generated' });
+      section.createEl('p', { text: 'Generated', cls: 'active-recall-section-label' });
       for (const status of withSelfTest) {
         const row = section.createDiv({ cls: 'active-recall-folder-row' });
-        row.createSpan({ text: status.folder.path });
+        const info = row.createDiv({ cls: 'active-recall-folder-info' });
+        info.createSpan({ text: status.folder.path, cls: 'active-recall-folder-name' });
         if (status.selfTestFile) {
-          row.createSpan({
+          info.createSpan({
             text: getLastGeneratedDate(status.selfTestFile),
             cls: 'active-recall-date',
           });
         }
-        const btn = row.createEl('button', { text: 'Regenerate' });
+        const btn = row.createEl('button', { text: 'Regenerate', cls: 'active-recall-btn' });
         btn.addEventListener('click', () => this.onGenerate(status.folder.path));
       }
     }
 
     if (withoutSelfTest.length > 0) {
       const section = container.createDiv({ cls: 'active-recall-section' });
-      section.createEl('h4', { text: 'Not generated' });
+      section.createEl('p', { text: 'Not generated', cls: 'active-recall-section-label' });
       for (const status of withoutSelfTest) {
         const row = section.createDiv({ cls: 'active-recall-folder-row' });
-        row.createSpan({ text: status.folder.path });
-        const btn = row.createEl('button', { text: 'Generate' });
+        const info = row.createDiv({ cls: 'active-recall-folder-info' });
+        info.createSpan({ text: status.folder.path, cls: 'active-recall-folder-name' });
+        const btn = row.createEl('button', { text: 'Generate', cls: 'active-recall-btn' });
         btn.addEventListener('click', () => this.onGenerate(status.folder.path));
       }
     }

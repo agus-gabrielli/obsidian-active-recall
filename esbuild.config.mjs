@@ -1,6 +1,16 @@
 import esbuild from "esbuild";
 import process from "process";
 import { builtinModules } from 'node:module';
+import { copyFileSync } from 'node:fs';
+
+const copyStylesPlugin = {
+	name: 'copy-styles',
+	setup(build) {
+		build.onEnd(() => {
+			copyFileSync('styles.css', 'test-vault/.obsidian/plugins/ai-active-recall/styles.css');
+		});
+	},
+};
 
 const banner =
 `/*
@@ -15,6 +25,7 @@ const context = await esbuild.context({
 	banner: {
 		js: banner,
 	},
+	plugins: [copyStylesPlugin],
 	entryPoints: ["src/main.ts"],
 	bundle: true,
 	external: [

@@ -1,7 +1,17 @@
-import { Notice, Plugin } from 'obsidian';
+import { Notice, Plugin, TFile } from 'obsidian';
 import { ActiveRecallSettings, DEFAULT_SETTINGS, ActiveRecallSettingTab } from './settings';
 import { GenerationService } from './generation';
 import { VIEW_TYPE_ACTIVE_RECALL, ActiveRecallSidebarView, buildActivateView, buildContextMenuHandler } from './sidebar';
+
+function refreshSidebarIfOpen(app: import('obsidian').App): void {
+    const leaves = app.workspace.getLeavesOfType(VIEW_TYPE_ACTIVE_RECALL);
+    if (leaves.length > 0) {
+        const view = leaves[0]?.view as ActiveRecallSidebarView | undefined;
+        if (view && typeof view.refresh === 'function') {
+            view.refresh();
+        }
+    }
+}
 
 export default class ActiveRecallPlugin extends Plugin {
     settings: ActiveRecallSettings;
@@ -49,8 +59,25 @@ export default class ActiveRecallPlugin extends Plugin {
                 }
                 const folderPath = activeFile.parent?.path ?? '/';
                 await generationService.generate(folderPath);
+                refreshSidebarIfOpen(this.app);
             },
         });
+
+        this.registerEvent(
+            this.app.vault.on('create', (file) => {
+                if (file instanceof TFile && file.basename === '_self-test') {
+                    refreshSidebarIfOpen(this.app);
+                }
+            })
+        );
+
+        this.registerEvent(
+            this.app.vault.on('delete', (file) => {
+                if (file instanceof TFile && file.basename === '_self-test') {
+                    refreshSidebarIfOpen(this.app);
+                }
+            })
+        );
     }
 
     onunload() {
