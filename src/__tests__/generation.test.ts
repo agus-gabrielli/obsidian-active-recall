@@ -219,8 +219,21 @@ describe('GenerationService', () => {
       expect(userFacingMsg).toBe('Invalid API key. Check your key in Settings.');
       expect(userFacingMsg).not.toContain('sk-');
 
-      // Also verify 429 mapping per the plan
-      expect(classifyError(429)).toContain('Rate limit');
+      // 429 must use exact wording without "Please"
+      expect(classifyError(429)).toBe('Rate limit reached. Wait a moment, then try again.');
+    });
+
+    test('maps status 400 with context_length_exceeded to folder-too-large message', () => {
+      const apiError = { error: { code: 'context_length_exceeded' } };
+      expect(classifyError(400, apiError)).toBe('Folder is too large to process. Try removing some notes or reducing note length.');
+    });
+
+    test('maps status 400 without context_length_exceeded to network error fallback', () => {
+      expect(classifyError(400)).toBe('Network error. Check your internet connection.');
+    });
+
+    test('maps status 500 to service error message', () => {
+      expect(classifyError(500)).toBe('OpenAI service error. Please try again later.');
     });
   });
 
