@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 current_phase: 05-polish-and-release
-current_plan: 05-02 (complete)
-status: in-progress
-last_updated: "2026-03-12T22:49:00Z"
+current_plan: 05-03 (task 3 pending human-action)
+status: executing
+last_updated: "2026-03-17T21:41:13.568Z"
 progress:
   total_phases: 5
-  completed_phases: 4
-  total_plans: 9
-  completed_plans: 9
+  completed_phases: 5
+  total_plans: 11
+  completed_plans: 11
 ---
 
 # Session State
@@ -24,10 +24,10 @@ See: .planning/PROJECT.md
 **Milestone:** v1.0 milestone
 **Milestone:** v1.0 milestone
 **Current phase:** 05-polish-and-release
-**Current plan:** 05-02 (complete)
-**Status:** In progress
+**Current plan:** 05-03 (Task 3 pending human-action)
+**Status:** In progress - awaiting store submission PR
 
-**Phase 05 Progress:** Plan 02 of N complete
+**Phase 05 Progress:** Plan 03 Tasks 1-2 of 3 complete; Task 3 requires browser action
 
 ## Decisions
 
@@ -44,6 +44,7 @@ See: .planning/PROJECT.md
 - 2026-03-12 (05-02): README uses plain prose only for v1 - no screenshots, badges, or GIFs
 - 2026-03-12 (05-02): API key setup embedded as a numbered step inside Installation (not a separate section)
 - 2026-03-12 (05-02): Three entry points (command palette, context menu, sidebar) all covered in How to use
+- [Phase 05-03]: isDesktopOnly: true - mobile not tested before v1; safe default for store submission
 
 ## Session Log
 
@@ -58,3 +59,5 @@ See: .planning/PROJECT.md
 - 2026-03-12: Stopped at - Completed 05-01-PLAN.md
 - 2026-03-12: Executed 05-02 (README rewrite for non-technical users) - 1 task + 1 human-verify, 1 commit (1d87015) - human approved all 7 checks
 - 2026-03-12: Stopped at - Completed 05-02-PLAN.md
+- 2026-03-17: Executed 05-03 Tasks 1-2 (release build and GitHub release) - isDesktopOnly: true, 30 tests green, release 1.0.0 live with 3 assets (ec30b05)
+- 2026-03-17: Stopped at Task 3 checkpoint:human-action - awaiting store submission PR URL from user
