@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-current_phase: 05-polish-and-release
-current_plan: 05-03 (closed - task 3 deferred to future final-release phase)
-status: planning
-last_updated: "2026-03-17"
+current_phase: 06-refinements-and-improvements
+current_plan: 06-03 (complete)
+status: in-progress
+last_updated: "2026-03-18"
 progress:
-  total_phases: 5
+  total_phases: 7
   completed_phases: 5
-  total_plans: 11
-  completed_plans: 11
+  total_plans: 14
+  completed_plans: 12
 ---
 
 # Session State
@@ -22,12 +22,11 @@ See: .planning/PROJECT.md
 ## Position
 
 **Milestone:** v1.0 milestone
-**Milestone:** v1.0 milestone
-**Current phase:** 05-polish-and-release (closed)
-**Current plan:** 05-03 closed - Task 3 (store submission) deferred to a future final-release phase
-**Status:** Planning - defining improvement phases before final release
+**Current phase:** 06-refinements-and-improvements (in progress)
+**Current plan:** 06-03 complete
+**Status:** In progress - executing refinement plans
 
-**Phase 05 Progress:** Complete. Task 3 of 05-03 intentionally deferred - plugin improvements planned before store submission.
+**Phase 06 Progress:** 06-03 complete (README science section). Prior plans 06-01, 06-02 also complete.
 
 ## Decisions
 
@@ -45,6 +44,8 @@ See: .planning/PROJECT.md
 - 2026-03-12 (05-02): API key setup embedded as a numbered step inside Installation (not a separate section)
 - 2026-03-12 (05-02): Three entry points (command palette, context menu, sidebar) all covered in How to use
 - [Phase 05-03]: isDesktopOnly: true - mobile not tested before v1; safe default for store submission
+- 2026-03-18 (06-03): README science section uses inline citations in prose rather than a bibliography - more readable for non-academic Obsidian users
+- 2026-03-18 (06-03): Differentiation section closes with neutral bridging sentence to avoid competitive tone vs LLM Test Generator (Competence)
 
 ## Session Log
 
@@ -62,6 +63,8 @@ See: .planning/PROJECT.md
 - 2026-03-17: Executed 05-03 Tasks 1-2 (release build and GitHub release) - isDesktopOnly: true, 30 tests green, release 1.0.0 live with 3 assets (ec30b05)
 - 2026-03-17: Closed 05-03 - Task 3 (store submission) deferred by decision; plugin improvements planned before final public release
 - 2026-03-17: Phase 6 context gathered (prompt templates, concept map mermaid, hint quality, source traceability, model dropdown, README science section, sidebar loading)
+- 2026-03-18: Executed 06-03 (README science foundations and differentiation) - 1 task, 1 commit (8164e4e)
+- 2026-03-18: Stopped at - Completed 06-03-PLAN.md
 
 ## Accumulated Context
 

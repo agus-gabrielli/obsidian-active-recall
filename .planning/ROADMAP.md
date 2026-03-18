@@ -109,7 +109,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 3. Generation Pipeline | 3/3 | Complete | 2026-03-10 |
 | 4. Commands and Sidebar | 3/3 | Complete   | 2026-03-12 |
 | 5. Polish and Release | 3/3 | Complete | 2026-03-17 |
-| 6. Refinements | 0/4 | Planning | - |
+| 6. Refinements | 1/4 | In progress | - |
 
 ### Phase 6: Refinements and improvements
 
@@ -121,7 +121,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 Plans:
 - [ ] 06-01-PLAN.md - Extract prompts to src/prompts.ts with Mermaid concept maps, contextual hints, source traceability (Wave 1)
 - [ ] 06-02-PLAN.md - Model selection dropdown in settings + sidebar loading spinner (Wave 1)
-- [ ] 06-03-PLAN.md - README science foundations and differentiation from LLM Test Generator (Wave 1)
+- [x] 06-03-PLAN.md - README science foundations and differentiation from LLM Test Generator (Wave 1)
 - [ ] 06-04-PLAN.md - Build, test, and human-verify all refinements in Obsidian (Wave 2)
 
 ### Phase 7: Final Release - recreate the 1.0.0 GitHub release with updated assets, then open the store submission PR (essentially absorbs 05-03 Task 3 + a fresh build)
