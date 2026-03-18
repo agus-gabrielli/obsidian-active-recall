@@ -104,6 +104,8 @@ export function buildContextMenuHandler(
  * The sidebar panel ItemView subclass.
  */
 export class ActiveRecallSidebarView extends ItemView {
+  private generatingFolders: Set<string> = new Set();
+
   constructor(
     leaf: WorkspaceLeaf,
     private _app: App,
@@ -161,8 +163,14 @@ export class ActiveRecallSidebarView extends ItemView {
             cls: 'active-recall-date',
           });
         }
-        const btn = row.createEl('button', { text: 'Regenerate', cls: 'active-recall-btn' });
-        btn.addEventListener('click', () => this.onGenerate(status.folder.path));
+        if (this.generatingFolders.has(status.folder.path)) {
+          const loading = row.createDiv({ cls: 'active-recall-loading' });
+          loading.createSpan({ cls: 'active-recall-spinner' });
+          loading.createSpan({ text: 'Generating...', cls: 'active-recall-loading-text' });
+        } else {
+          const btn = row.createEl('button', { text: 'Regenerate', cls: 'active-recall-btn' });
+          btn.addEventListener('click', () => this.onGenerate(status.folder.path));
+        }
       }
     }
 
@@ -173,14 +181,26 @@ export class ActiveRecallSidebarView extends ItemView {
         const row = section.createDiv({ cls: 'active-recall-folder-row' });
         const info = row.createDiv({ cls: 'active-recall-folder-info' });
         info.createSpan({ text: status.folder.path, cls: 'active-recall-folder-name' });
-        const btn = row.createEl('button', { text: 'Generate', cls: 'active-recall-btn' });
-        btn.addEventListener('click', () => this.onGenerate(status.folder.path));
+        if (this.generatingFolders.has(status.folder.path)) {
+          const loading = row.createDiv({ cls: 'active-recall-loading' });
+          loading.createSpan({ cls: 'active-recall-spinner' });
+          loading.createSpan({ text: 'Generating...', cls: 'active-recall-loading-text' });
+        } else {
+          const btn = row.createEl('button', { text: 'Generate', cls: 'active-recall-btn' });
+          btn.addEventListener('click', () => this.onGenerate(status.folder.path));
+        }
       }
     }
   }
 
   private async onGenerate(folderPath: string): Promise<void> {
-    await this.generationService.generate(folderPath);
+    this.generatingFolders.add(folderPath);
     this.refresh();
+    try {
+      await this.generationService.generate(folderPath);
+    } finally {
+      this.generatingFolders.delete(folderPath);
+      this.refresh();
+    }
   }
 }
