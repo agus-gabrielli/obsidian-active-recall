@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Settings** - Full settings tab with provider, API key, model, language, toggles, and custom instructions persists correctly (completed 2026-03-10)
 - [x] **Phase 3: Generation Pipeline** - End-to-end self-test generation from note collection through LLM call to _self-test.md output, including batch+synthesize and user feedback (completed 2026-03-10)
 - [x] **Phase 4: Commands and Sidebar** - All entry points wired (command palette, context menu, sidebar panel) calling the live generation pipeline (completed 2026-03-12)
-- [ ] **Phase 5: Polish and Release** - Production-quality error handling, README, and verified store submission compliance
+- [x] **Phase 5: Polish and Release** - Production-quality error handling, README, and GitHub release published (store submission deferred to Phase 6)
 
 ## Phase Details
 
@@ -93,14 +93,14 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 05-01-PLAN.md - Fix classifyError() (429 wording, context-exceeded branch) and update manifest description (Wave 1)
-- [ ] 05-02-PLAN.md - Rewrite README.md for non-technical Obsidian users (Wave 1)
-- [ ] 05-03-PLAN.md - Mobile decision, production build, GitHub release, store submission PR (Wave 2)
+- [x] 05-01-PLAN.md - Fix classifyError() (429 wording, context-exceeded branch) and update manifest description (Wave 1)
+- [x] 05-02-PLAN.md - Rewrite README.md for non-technical Obsidian users (Wave 1)
+- [x] 05-03-PLAN.md - Mobile decision, production build, GitHub release 1.0.0 published (Wave 2); store submission deferred to Phase 6
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -108,4 +108,28 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. Settings | 1/1 | Complete   | 2026-03-10 |
 | 3. Generation Pipeline | 3/3 | Complete | 2026-03-10 |
 | 4. Commands and Sidebar | 3/3 | Complete   | 2026-03-12 |
-| 5. Polish and Release | 2/3 | In Progress|  |
+| 5. Polish and Release | 3/3 | Complete | 2026-03-17 |
+| 6. Refinements | 0/4 | Planning | - |
+
+### Phase 6: Refinements and improvements
+
+**Goal:** Improve prompt quality (Mermaid concept maps, contextual hints, source traceability), UX polish (model dropdown, sidebar loading spinner), and README (science foundations, differentiation) before the final store submission in Phase 7
+**Requirements**: REFINE-PROMPTS, REFINE-UI, REFINE-README, REFINE-VERIFY
+**Depends on:** Phase 5
+**Plans:** 4 plans
+
+Plans:
+- [ ] 06-01-PLAN.md - Extract prompts to src/prompts.ts with Mermaid concept maps, contextual hints, source traceability (Wave 1)
+- [ ] 06-02-PLAN.md - Model selection dropdown in settings + sidebar loading spinner (Wave 1)
+- [ ] 06-03-PLAN.md - README science foundations and differentiation from LLM Test Generator (Wave 1)
+- [ ] 06-04-PLAN.md - Build, test, and human-verify all refinements in Obsidian (Wave 2)
+
+### Phase 7: Final Release - recreate the 1.0.0 GitHub release with updated assets, then open the store submission PR (essentially absorbs 05-03 Task 3 + a fresh build)
+
+**Goal:** [To be planned]
+**Requirements**: TBD
+**Depends on:** Phase 6
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 7 to break down)
