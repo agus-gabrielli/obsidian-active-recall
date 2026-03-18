@@ -5,12 +5,12 @@ milestone_name: milestone
 current_phase: 06-refinements-and-improvements (in progress)
 current_plan: 06-03 complete
 status: executing
-last_updated: "2026-03-18T12:43:16.145Z"
+last_updated: "2026-03-18T12:44:15.539Z"
 progress:
   total_phases: 7
   completed_phases: 5
   total_plans: 15
-  completed_plans: 13
+  completed_plans: 14
 ---
 
 # Session State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md
 **Current plan:** 06-03 complete
 **Status:** In progress - executing refinement plans
 
-**Phase 06 Progress:** 06-03 complete (README science section). Prior plans 06-01, 06-02 also complete.
+**Phase 06 Progress:** All plans complete - 06-01 (prompt extraction), 06-02 (model dropdown + loading indicator), 06-03 (README science section).
 
 ## Decisions
 
@@ -47,6 +47,8 @@ See: .planning/PROJECT.md
 - 2026-03-18 (06-03): README science section uses inline citations in prose rather than a bibliography - more readable for non-academic Obsidian users
 - 2026-03-18 (06-03): Differentiation section closes with neutral bridging sentence to avoid competitive tone vs LLM Test Generator (Competence)
 - [Phase 06-02]: CURATED_MODELS = gpt-4o, gpt-4o-mini, gpt-4.1, gpt-4.1-mini, gpt-4.1-nano; isCustomModel check drives conditional rendering; generatingFolders Set with try/finally ensures cleanup
+- [Phase 06-01]: render() uses split().join() for {{placeholder}} substitution - simple, no regex edge cases
+- [Phase 06-01]: prompts.ts is single source of truth for all LLM prompt text; generation.ts delegates via render()
 
 ## Session Log
 
@@ -64,6 +66,8 @@ See: .planning/PROJECT.md
 - 2026-03-17: Executed 05-03 Tasks 1-2 (release build and GitHub release) - isDesktopOnly: true, 30 tests green, release 1.0.0 live with 3 assets (ec30b05)
 - 2026-03-17: Closed 05-03 - Task 3 (store submission) deferred by decision; plugin improvements planned before final public release
 - 2026-03-17: Phase 6 context gathered (prompt templates, concept map mermaid, hint quality, source traceability, model dropdown, README science section, sidebar loading)
+- 2026-03-18: Executed 06-01 (prompt extraction and quality improvements) - 2 tasks, 2 commits (12a3b41, d3bfb61) - prompts.ts created, Mermaid mindmap, source traceability, contextual hints
+- 2026-03-18: Stopped at - Completed 06-01-PLAN.md
 - 2026-03-18: Executed 06-02 (model dropdown + sidebar loading indicator) - 2 tasks, 2 commits (6dac1ca, c3ba250)
 - 2026-03-18: Stopped at - Completed 06-02-PLAN.md
 - 2026-03-18: Executed 06-03 (README science foundations and differentiation) - 1 task, 1 commit (8164e4e)
