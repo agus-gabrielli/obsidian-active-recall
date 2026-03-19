@@ -39,7 +39,6 @@ export const DEFAULT_SETTINGS: ActiveRecallSettings = {
 
 export class ActiveRecallSettingTab extends PluginSettingTab {
     plugin: ActiveRecallPlugin;
-    private showCustomInput = false;
 
     constructor(app: App, plugin: ActiveRecallPlugin) {
         super(app, plugin);
@@ -76,10 +75,8 @@ export class ActiveRecallSettingTab extends PluginSettingTab {
                     });
             });
 
-        // Determine if current model is in the curated list
-        const isCustomModel = !CURATED_MODELS.includes(this.plugin.settings.model)
-            || this.plugin.settings.model === '';
-        if (isCustomModel) this.showCustomInput = true;
+        // Custom = any model not in the curated list (including empty string)
+        const isCustomModel = !CURATED_MODELS.includes(this.plugin.settings.model);
 
         new Setting(containerEl)
             .setName('Model')
@@ -89,28 +86,29 @@ export class ActiveRecallSettingTab extends PluginSettingTab {
                     drop.addOption(m, m);
                 }
                 drop.addOption(CUSTOM_MODEL_VALUE, 'Custom model...');
-                drop.setValue(this.showCustomInput ? CUSTOM_MODEL_VALUE : this.plugin.settings.model);
+                drop.setValue(isCustomModel ? CUSTOM_MODEL_VALUE : this.plugin.settings.model);
                 drop.onChange(async (value) => {
                     if (value === CUSTOM_MODEL_VALUE) {
-                        this.showCustomInput = true;
+                        // Clear model so custom input appears and persists across reopens
+                        this.plugin.settings.model = '';
+                        await this.plugin.saveSettings();
                         this.display();
                         return;
                     }
-                    this.showCustomInput = false;
                     this.plugin.settings.model = value;
                     await this.plugin.saveSettings();
                     this.display();
                 });
             });
 
-        // Show custom model text input when custom is selected
-        if (this.showCustomInput) {
+        // Show custom model text input when a non-curated model is set
+        if (isCustomModel) {
             new Setting(containerEl)
                 .setName('Custom model name')
                 .setDesc('Enter the exact OpenAI model identifier.')
                 .addText(text => text
-                    .setPlaceholder('e.g. gpt-4o-2024-08-06')
-                    .setValue(isCustomModel ? this.plugin.settings.model : '')
+                    .setPlaceholder('e.g. gpt-5.4-2026-03-05')
+                    .setValue(this.plugin.settings.model)
                     .onChange(async (value) => {
                         this.plugin.settings.model = value;
                         await this.plugin.saveSettings();
