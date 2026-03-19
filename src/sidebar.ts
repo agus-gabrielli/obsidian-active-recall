@@ -169,7 +169,7 @@ export class ActiveRecallSidebarView extends ItemView {
           loading.createSpan({ text: 'Generating...', cls: 'active-recall-loading-text' });
         } else {
           const btn = row.createEl('button', { text: 'Regenerate', cls: 'active-recall-btn' });
-          btn.addEventListener('click', () => this.onGenerate(status.folder.path));
+          btn.addEventListener('click', () => this.generateForFolder(status.folder.path));
         }
       }
     }
@@ -187,13 +187,13 @@ export class ActiveRecallSidebarView extends ItemView {
           loading.createSpan({ text: 'Generating...', cls: 'active-recall-loading-text' });
         } else {
           const btn = row.createEl('button', { text: 'Generate', cls: 'active-recall-btn' });
-          btn.addEventListener('click', () => this.onGenerate(status.folder.path));
+          btn.addEventListener('click', () => this.generateForFolder(status.folder.path));
         }
       }
     }
   }
 
-  private async onGenerate(folderPath: string): Promise<void> {
+  public async generateForFolder(folderPath: string): Promise<void> {
     this.generatingFolders.add(folderPath);
     this.refresh();
     try {

@@ -63,10 +63,13 @@ Rules:
 
 export function buildHintInstruction(enabled: boolean): string {
     if (!enabled) return '';
-    return `- After each question, add a collapsible hint using this exact callout syntax:
-  > [!hint]-
-  > Your hint text here
-  (blank line required after the callout block)
+    return `- After each question, add a blank line and then a collapsible hint callout. The callout MUST start at column 1 (no leading spaces or indentation, even inside numbered lists). Use this exact syntax:
+
+1. Question text here
+
+> [!hint]-
+> Your hint text here
+
 - Hints must be contextual cues that situate the concept without revealing the answer.
 - Good hint example: "Think about the training loop - what happens after the forward pass computes the loss?"
 - Hints should trigger recall through associations, context, or indirect cues.
@@ -75,10 +78,11 @@ export function buildHintInstruction(enabled: boolean): string {
 
 export function buildCheckInstruction(enabled: boolean): string {
     if (!enabled) return '';
-    return `- After each hint (or question if hints are disabled), add a collapsible reference answer with a blank line before it:
+    return `- After each hint (or question if hints are disabled), add a blank line and then a collapsible reference answer callout. The callout MUST start at column 1 (no leading spaces or indentation). Use this exact syntax:
 
-  > [!check]-
-  > Your reference answer here
+> [!check]-
+> Your reference answer here
+
 - Reference answers should provide explanations that help understanding, not just validate the answer. Add context or clarifications when relevant to reinforce learning.
 - At the end of each reference answer, add a source line using Obsidian wiki-link syntax referencing which note(s) the answer is based on. Format: Source: [[Note A]], [[Note B]]
 - The note names come from the === Note: name === headers in the content above.`;

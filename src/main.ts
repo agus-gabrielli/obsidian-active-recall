@@ -3,14 +3,17 @@ import { ActiveRecallSettings, DEFAULT_SETTINGS, ActiveRecallSettingTab } from '
 import { GenerationService } from './generation';
 import { VIEW_TYPE_ACTIVE_RECALL, ActiveRecallSidebarView, buildActivateView, buildContextMenuHandler } from './sidebar';
 
-function refreshSidebarIfOpen(app: import('obsidian').App): void {
+function getSidebarView(app: import('obsidian').App): ActiveRecallSidebarView | null {
     const leaves = app.workspace.getLeavesOfType(VIEW_TYPE_ACTIVE_RECALL);
     if (leaves.length > 0) {
         const view = leaves[0]?.view as ActiveRecallSidebarView | undefined;
-        if (view && typeof view.refresh === 'function') {
-            view.refresh();
-        }
+        if (view && typeof view.refresh === 'function') return view;
     }
+    return null;
+}
+
+function refreshSidebarIfOpen(app: import('obsidian').App): void {
+    getSidebarView(app)?.refresh();
 }
 
 export default class ActiveRecallPlugin extends Plugin {
@@ -40,7 +43,11 @@ export default class ActiveRecallPlugin extends Plugin {
         this.registerEvent(
             this.app.workspace.on(
                 'file-menu',
-                buildContextMenuHandler(generationService.generate.bind(generationService), this.app, VIEW_TYPE_ACTIVE_RECALL)
+                buildContextMenuHandler((folderPath: string) => {
+                    const sidebar = getSidebarView(this.app);
+                    if (sidebar) return sidebar.generateForFolder(folderPath);
+                    return generationService.generate(folderPath).then(() => refreshSidebarIfOpen(this.app));
+                })
             )
         );
 
@@ -58,8 +65,13 @@ export default class ActiveRecallPlugin extends Plugin {
                     return;
                 }
                 const folderPath = activeFile.parent?.path ?? '/';
-                await generationService.generate(folderPath);
-                refreshSidebarIfOpen(this.app);
+                const sidebar = getSidebarView(this.app);
+                if (sidebar) {
+                    await sidebar.generateForFolder(folderPath);
+                } else {
+                    await generationService.generate(folderPath);
+                    refreshSidebarIfOpen(this.app);
+                }
             },
         });
 
