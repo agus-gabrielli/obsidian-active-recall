@@ -135,6 +135,32 @@ function makeMockEl(): {
   };
 }
 
+// Minimal PluginSettingTab base class - allows ActiveRecallSettingTab to extend it in tests
+export class PluginSettingTab {
+  app: unknown;
+  containerEl: {
+    empty: () => void;
+  };
+
+  constructor(_app: unknown, _plugin: unknown) {
+    this.app = _app;
+    this.containerEl = { empty: () => {} };
+  }
+}
+
+// Minimal Setting class - allows settings UI to be instantiated in tests
+export class Setting {
+  constructor(_containerEl: unknown) {}
+  setName(_name: string): this { return this; }
+  setDesc(_desc: string): this { return this; }
+  setHeading(): this { return this; }
+  setDisabled(_disabled: boolean): this { return this; }
+  addDropdown(_cb: (drop: { addOption: () => unknown; setValue: () => unknown; onChange: () => unknown }) => void): this { return this; }
+  addText(_cb: (text: { inputEl: { type: string }; setPlaceholder: () => unknown; setValue: () => unknown; onChange: () => unknown }) => void): this { return this; }
+  addToggle(_cb: (toggle: { setValue: () => unknown; onChange: () => unknown }) => void): this { return this; }
+  addTextArea(_cb: (text: { setPlaceholder: () => unknown; setValue: () => unknown; inputEl: { addEventListener: () => unknown } }) => void): this { return this; }
+}
+
 // Minimal ItemView base class - allows ActiveRecallSidebarView to extend it in tests
 export class ItemView {
   contentEl: ReturnType<typeof makeMockEl>;
