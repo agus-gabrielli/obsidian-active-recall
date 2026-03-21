@@ -108,6 +108,23 @@ export function buildMessages(
     return [{ role: 'system', content: systemMessage }, { role: 'user', content: userMessage }];
 }
 
+/**
+ * Fix common LLM output issues that break Obsidian rendering:
+ * - Callout lines (> [!hint], > [!check]) indented inside numbered lists
+ * - "&" in Mermaid node labels renders as "&amp;" in Obsidian's Mermaid renderer
+ */
+export function postProcessLLMOutput(text: string): string {
+    // Strip leading whitespace from callout lines so they render at column 1
+    let result = text.replace(/^[ \t]+(>[^\n]*)/gm, '$1');
+
+    // Replace "&" with "and" inside mermaid blocks (Obsidian renders & as &amp;)
+    result = result.replace(/```mermaid\n([\s\S]*?)```/g, (_match, body: string) => {
+        return '```mermaid\n' + body.replace(/&/g, 'and') + '```';
+    });
+
+    return result;
+}
+
 export class LLMError extends Error {
     constructor(public status: number, public apiError: unknown) {
         super(`LLM API error: status ${status}`);
@@ -122,9 +139,14 @@ export function classifyError(status: number, apiError?: unknown, provider = 'Op
         if (code === 'context_length_exceeded') {
             return 'Folder is too large to process. Try removing some notes or reducing note length.';
         }
+        const message = (apiError as { error?: { message?: string } })?.error?.message;
+        if (message && /credit balance|billing|payment/i.test(message)) {
+            return `${provider} account has no credits. Add billing at your provider's dashboard.`;
+        }
     }
+    if (status === 403) return `${provider} API key lacks permission. Check your API key and account status.`;
     if (status >= 500) return `${provider} service error. Please try again later.`;
-    return 'Network error. Check your internet connection.';
+    return `${provider} API error (${status}). Check the console for details.`;
 }
 
 async function callOpenAI(
@@ -318,6 +340,8 @@ export class GenerationService {
                 finalContent = await callLLM(this.settings.provider, providerCfg.apiKey, providerCfg.model, synthesisMessages);
             }
 
+            finalContent = postProcessLLMOutput(finalContent);
+
             // Prepend YAML frontmatter
             const frontmatter = `---\nlast_review: null\nnext_review: null\nreview_count: 0\nreview_interval_days: 1\n---\n\n# Self-Test: ${folderName}\n\n`;
             const output = frontmatter + finalContent;
@@ -325,6 +349,10 @@ export class GenerationService {
             await writeOutput(this.app, folderPath, output);
             new Notice(`Self-test written to ${folderName}/`);
         } catch (err) {
+            console.error('[self-test] Generation error:', err);
+            if (err instanceof LLMError) {
+                console.error('[self-test] LLMError status:', err.status, 'body:', JSON.stringify(err.apiError));
+            }
             const providerLabel = PROVIDER_CONFIG[this.settings.provider].label;
             const msg = err instanceof LLMError
                 ? classifyError(err.status, err.apiError, providerLabel)

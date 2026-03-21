@@ -8,6 +8,7 @@ import {
   classifyError,
   callLLM,
   LLMError,
+  postProcessLLMOutput,
 } from '../generation';
 import {
   TFile,
@@ -232,8 +233,17 @@ describe('GenerationService', () => {
       expect(classifyError(400, apiError)).toBe('Folder is too large to process. Try removing some notes or reducing note length.');
     });
 
-    test('maps status 400 without context_length_exceeded to network error fallback', () => {
-      expect(classifyError(400)).toBe('Network error. Check your internet connection.');
+    test('maps status 400 without context_length_exceeded to generic API error fallback', () => {
+      expect(classifyError(400)).toBe('OpenAI API error (400). Check the console for details.');
+    });
+
+    test('maps status 400 with credit balance message to billing error', () => {
+      const apiError = { error: { message: 'Your credit balance is too low to access the Anthropic API.' } };
+      expect(classifyError(400, apiError, 'Claude (Anthropic)')).toBe('Claude (Anthropic) account has no credits. Add billing at your provider\'s dashboard.');
+    });
+
+    test('maps status 403 to permission error with provider name', () => {
+      expect(classifyError(403, undefined, 'Gemini')).toBe('Gemini API key lacks permission. Check your API key and account status.');
     });
 
     test('maps status 500 to service error message', () => {
@@ -470,5 +480,60 @@ describe('GenerationService provider error label', () => {
 
     const noticeCalls = (Notice as jest.Mock).mock.calls.map((c: [string]) => c[0]);
     expect(noticeCalls.some((msg: string) => msg.includes('Gemini'))).toBe(true);
+  });
+});
+
+describe('postProcessLLMOutput', () => {
+  test('strips leading whitespace from callout lines', () => {
+    const input = `1. What is X?
+
+    > [!hint]-
+    > Think about Y.
+
+    > [!check]-
+    > The answer is Z.`;
+
+    const result = postProcessLLMOutput(input);
+    expect(result).toBe(`1. What is X?
+
+> [!hint]-
+> Think about Y.
+
+> [!check]-
+> The answer is Z.`);
+  });
+
+  test('preserves callout lines already at column 1', () => {
+    const input = `1. What is X?
+
+> [!hint]-
+> Already correct.`;
+
+    expect(postProcessLLMOutput(input)).toBe(input);
+  });
+
+  test('handles tabs as indentation', () => {
+    const input = `\t> [!hint]-\n\t> Tabbed hint.`;
+    const result = postProcessLLMOutput(input);
+    expect(result).toBe(`> [!hint]-\n> Tabbed hint.`);
+  });
+
+  test('replaces & with "and" inside mermaid blocks', () => {
+    const input = `\`\`\`mermaid
+mindmap
+  root((Topic))
+    Limitations & Control
+    Input & Output
+\`\`\``;
+
+    const result = postProcessLLMOutput(input);
+    expect(result).toContain('Limitations and Control');
+    expect(result).toContain('Input and Output');
+    expect(result).not.toContain(' & ');
+  });
+
+  test('does not replace & outside mermaid blocks', () => {
+    const input = `Use R&D for research & development.`;
+    expect(postProcessLLMOutput(input)).toBe(input);
   });
 });
