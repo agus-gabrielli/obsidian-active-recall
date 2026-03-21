@@ -53,29 +53,50 @@
 - [x] **DIST-01**: `manifest.json` meets Obsidian community store requirements: plugin ID `ai-active-recall` (no `obsidian-` prefix), `minAppVersion` set appropriately, `isDesktopOnly` accurate
 - [x] **DIST-02**: README covers installation steps and API key configuration
 
-## v2 Requirements
+## v2.0 Requirements
+
+### Providers
+
+- [ ] **PROV-01**: User can select LLM provider (OpenAI, Gemini, Claude) from a dropdown in settings
+- [ ] **PROV-02**: User can configure a separate API key for each provider (keys persist independently)
+- [ ] **PROV-03**: User can select from a curated model list per provider (with custom model option)
+- [ ] **PROV-04**: Plugin calls Gemini via Google AI Studio API (generativelanguage.googleapis.com) using requestUrl()
+- [ ] **PROV-05**: Plugin calls Claude via native Anthropic Messages API (api.anthropic.com) using requestUrl()
+- [ ] **PROV-06**: Error messages reference the active provider by name (e.g. "Gemini API key invalid")
+- [ ] **PROV-07**: Existing v1.0 users' OpenAI API key and model are migrated automatically on first v2.0 load
+
+### Collection Modes
+
+- [ ] **COL-01**: User can generate a self-test from all notes sharing a specific tag via a tag picker modal
+- [ ] **COL-02**: Tag picker modal shows all vault tags with autocomplete/filtering
+- [ ] **COL-03**: Tag-based output goes to a `_self-tests/` folder (e.g. `_self-tests/_self-test-python-language.md`)
+- [ ] **COL-04**: User can generate a self-test from a root/MOC note plus all its directly linked notes (depth 1)
+- [ ] **COL-05**: User can optionally include depth-2 links (links of links) via a toggle in the picker
+- [ ] **COL-06**: User can generate a self-test for a single note (context menu on files + command palette)
+- [ ] **COL-07**: Single-note output goes to the same folder as the source note (e.g. `my-note_self-test.md`)
+
+### UI Updates
+
+- [ ] **UI-03**: Sidebar supports all generation modes (folder, tag, linked notes, single note) with clear navigation
+- [ ] **UI-04**: Sidebar shows tag-based and link-based self-tests alongside folder-based ones
+
+### Distribution
+
+- [ ] **DIST-03**: README updated with new provider setup instructions and collection mode usage
+- [ ] **DIST-04**: Plugin passes Obsidian community store review and PR is submitted to obsidianmd/obsidian-releases
+
+## Future Requirements
 
 ### Spaced Repetition
 
 - **SR-01**: `_self-test.md` YAML frontmatter includes `last_review`, `next_review`, `review_count`, `review_interval_days` (reserved in v1 YAML but unpopulated)
 - **SR-02**: Sidebar panel shows priority-ordered list of self-tests based on `next_review` date
-- **SR-03**: Fixed-interval spaced repetition scheduling (1 → 3 → 7 → 14 → 30 days)
+- **SR-03**: Fixed-interval spaced repetition scheduling (1 -> 3 -> 7 -> 14 -> 30 days)
 
 ### Content Change Detection
 
 - **STA-01**: Sidebar panel flags folders where notes have been modified after `_self-test.md` was last generated
 - **STA-02**: Sidebar shows which specific notes changed since last generation
-
-### Alternative Providers
-
-- **PROV-01**: User can configure Anthropic as LLM provider
-- **PROV-02**: User can configure a custom OpenAI-compatible endpoint
-
-### Alternative Collection Modes
-
-- **COL-01**: User can generate a self-test from a single note (`my-note_self-test.md`)
-- **COL-02**: User can generate a self-test from all notes with a given tag
-- **COL-03**: User can generate a self-test from a root note and all its linked notes
 
 ## Out of Scope
 
@@ -87,7 +108,9 @@
 | Cloud sync of review progress | Requires backend infrastructure; violates local-first ethos |
 | Bundled API key or free tier | Violates Obsidian store guidelines; creates cost liability |
 | Automatic backup of previous self-tests | File management complexity; user renames manually; git handles versioning |
-| Real-time streaming output | `requestUrl()` does not support streaming; non-streaming acceptable for v1; desktop-only workaround deferred to v2 |
+| Real-time streaming output | `requestUrl()` does not support streaming; non-streaming acceptable for v2 |
+| OpenAI-compatible proxy for Gemini/Claude | Using native APIs instead for proper feature support |
+| Custom OpenAI-compatible endpoint | Deferred to future - three major providers sufficient for v2.0 |
 
 ## Traceability
 
@@ -120,12 +143,31 @@
 | FB-02 | Phase 3 | Complete |
 | DIST-01 | Phase 1 | Complete |
 | DIST-02 | Phase 5 | Complete |
+| PROV-01 | TBD | Pending |
+| PROV-02 | TBD | Pending |
+| PROV-03 | TBD | Pending |
+| PROV-04 | TBD | Pending |
+| PROV-05 | TBD | Pending |
+| PROV-06 | TBD | Pending |
+| PROV-07 | TBD | Pending |
+| COL-01 | TBD | Pending |
+| COL-02 | TBD | Pending |
+| COL-03 | TBD | Pending |
+| COL-04 | TBD | Pending |
+| COL-05 | TBD | Pending |
+| COL-06 | TBD | Pending |
+| COL-07 | TBD | Pending |
+| UI-03 | TBD | Pending |
+| UI-04 | TBD | Pending |
+| DIST-03 | TBD | Pending |
+| DIST-04 | TBD | Pending |
 
 **Coverage:**
-- v1 requirements: 27 total
-- Mapped to phases: 27
-- Unmapped: 0 - all requirements covered
+- v1 requirements: 27 total (all complete)
+- v2.0 requirements: 17 total
+- Mapped to phases: 27 (v2.0 TBD - awaiting roadmap)
+- Unmapped: 17
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-09 after roadmap creation*
+*Last updated: 2026-03-21 after v2.0 milestone requirements*
