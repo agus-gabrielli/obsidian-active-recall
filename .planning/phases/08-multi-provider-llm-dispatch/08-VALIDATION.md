@@ -1,9 +1,9 @@
 ---
 phase: 8
 slug: multi-provider-llm-dispatch
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: approved
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-03-21
 ---
 
@@ -38,9 +38,9 @@ created: 2026-03-21
 
 | Task ID | Plan | Wave | Requirement | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|-----------|-------------------|-------------|--------|
-| 08-01-01 | 01 | 1 | PROV-04 | unit | `npx jest --testPathPattern generation` | ❌ W0 | ⬜ pending |
-| 08-01-02 | 01 | 1 | PROV-05 | unit | `npx jest --testPathPattern generation` | ❌ W0 | ⬜ pending |
-| 08-01-03 | 01 | 1 | PROV-06 | unit | `npx jest --testPathPattern generation` | ❌ W0 | ⬜ pending |
+| 08-01-01 | 01 | 1 | PROV-04 | unit | `npx jest --testPathPattern generation` | ✅ `src/__tests__/generation.test.ts` | ⬜ pending |
+| 08-01-02 | 01 | 1 | PROV-05 | unit | `npx jest --testPathPattern generation` | ✅ `src/__tests__/generation.test.ts` | ⬜ pending |
+| 08-01-03 | 01 | 1 | PROV-06 | unit | `npx jest --testPathPattern generation` | ✅ `src/__tests__/generation.test.ts` | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
@@ -48,10 +48,7 @@ created: 2026-03-21
 
 ## Wave 0 Requirements
 
-- [ ] `tests/generation.test.ts` - stubs for PROV-04, PROV-05, PROV-06 (provider dispatch, error classification)
-- [ ] Update existing classifyError test assertions for provider-interpolated messages
-
-*Existing jest infrastructure covers framework needs.*
+*Existing infrastructure covers all phase requirements. New tests extend `src/__tests__/generation.test.ts`; no new files needed.*
 
 ---
 
@@ -67,11 +64,11 @@ created: 2026-03-21
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 5s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references - existing file covers all
+- [x] No watch-mode flags
+- [x] Feedback latency < 5s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** approved 2026-03-21
