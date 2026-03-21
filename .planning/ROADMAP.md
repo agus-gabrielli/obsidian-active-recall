@@ -155,7 +155,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 08-01-PLAN.md - TDD: Gemini/Anthropic adapters, callLLM dispatcher, provider-aware classifyError
+- [x] 08-01-PLAN.md - TDD: Gemini/Anthropic adapters, callLLM dispatcher, provider-aware classifyError
 - [ ] 08-02-PLAN.md - Production build and human-verify all three providers in Obsidian
 
 ### Phase 9: Flexible Note Collection
@@ -220,7 +220,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 5. Polish and Release | 3/3 | Complete | 2026-03-17 |
 | 6. Refinements | 4/4 | Complete | 2026-03-19 |
 | 7. Provider Settings and Migration | 2/2 | Complete   | 2026-03-21 |
-| 8. Multi-Provider LLM Dispatch | 0/2 | Not started | - |
+| 8. Multi-Provider LLM Dispatch | 1/2 | In Progress|  |
 | 9. Flexible Note Collection | 0/TBD | Not started | - |
 | 10. Sidebar Redesign | 0/TBD | Not started | - |
 | 11. v2.0 Release | 0/TBD | Not started | - |

@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Phases
-current_phase: 07
-current_plan: Not started
-status: completed
-last_updated: "2026-03-21T19:47:45.194Z"
+current_phase: 08
+current_plan: 2
+status: executing
+last_updated: "2026-03-21T20:40:35.710Z"
 last_activity: 2026-03-21
 progress:
-  total_phases: 7
+  total_phases: 8
   completed_phases: 7
-  total_plans: 17
-  completed_plans: 17
+  total_plans: 19
+  completed_plans: 18
 ---
 
 # Session State
@@ -20,14 +20,14 @@ progress:
 
 See: .planning/PROJECT.md (updated 2026-03-21)
 **Core value:** Users can generate a structured self-test from any folder of notes in one click, turning passive note review into active recall practice.
-**Current focus:** Phase 07 — final-release-recreate-the-1-0-0-github-release-with-updated-assets-then-open-the-store-submission-pr-essentially-absorbs-05-03-task-3-a-fresh-build
+**Current focus:** Phase 08 — multi-provider-llm-dispatch
 
 ## Position
 
 **Milestone:** v2.0 Multi-Provider & Flexible Collection
-**Current phase:** 07
-**Current plan:** Not started
-**Status:** Milestone complete
+**Current phase:** 08
+**Current plan:** 1
+**Status:** Executing Phase 08
 **Progress bar:** [----------] 0/5 v2.0 phases complete
 **Last activity:** 2026-03-21
 
@@ -40,6 +40,13 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 | 9 - Flexible Note Collection | Generate self-tests from notes by tag, by linked notes, or single note | COL-01 through COL-07 |
 | 10 - Sidebar Redesign | Sidebar supports all four modes with clear navigation | UI-03, UI-04 |
 | 11 - v2.0 Release | README updated; store submission PR open | DIST-03, DIST-04 |
+
+## Key Architecture Decisions (from Phase 08-01 execution)
+
+- 2026-03-21 (08-01): callGemini and callAnthropic are private module functions; tests exercise them through callLLM dispatcher (not exported)
+- 2026-03-21 (08-01): classifyError default provider='OpenAI' preserves backwards-compatible message wording for existing callers with no provider arg
+- 2026-03-21 (08-01): Notice mock changed to jest.fn() in obsidian mock to enable call tracking across all adapter tests
+- 2026-03-21 (08-01): Gemini safety block detected by empty candidates array (not finishReason SAFETY per test spec)
 
 ## Key Architecture Decisions (from Phase 07-01 execution)
 
@@ -123,6 +130,8 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 - 2026-03-21: Executed 07-01 (provider settings and migration) - 2 tasks, 2 commits (2dd1085, 13fedbb) - 69 tests pass, zero TS errors, prod build clean
 - 2026-03-21: Executed 07-02 (provider-scoped settings UI) - 1 auto task + 1 human-verify, 1 commit (8288b04) - user approved all 10 checks in Obsidian
 - 2026-03-21: Stopped at - Completed 07-02-PLAN.md
+- 2026-03-21: Executed 08-01 (multi-provider LLM adapters) - 2 TDD tasks, 2 commits (631a142 RED, 5962e97 GREEN) - 84 tests pass, 0 TS errors
+- 2026-03-21: Stopped at - Completed 08-01-PLAN.md
 
 ## Accumulated Context
 
