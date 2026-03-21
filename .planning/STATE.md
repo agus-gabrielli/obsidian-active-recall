@@ -3,15 +3,15 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Phases
 current_phase: 09
-current_plan: 2
+current_plan: 3
 status: executing
-last_updated: "2026-03-21T23:51:50.328Z"
+last_updated: "2026-03-21T23:57:12.808Z"
 last_activity: 2026-03-21
 progress:
   total_phases: 9
   completed_phases: 8
   total_plans: 22
-  completed_plans: 20
+  completed_plans: 21
 ---
 
 # Session State
@@ -27,8 +27,8 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 **Milestone:** v2.0 Multi-Provider & Flexible Collection
 **Current phase:** 09
 **Current plan:** 2
-**Status:** Executing Phase 09 (Plan 02)
-**Progress bar:** [█████████░] 91% (20/22 plans complete)
+**Status:** Executing Phase 09 (Plan 03)
+**Progress bar:** [██████████] 95% (21/22 plans complete)
 **Last activity:** 2026-03-21
 
 ## v2.0 Phase Summary
@@ -40,6 +40,12 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 | 9 - Flexible Note Collection | Generate self-tests from notes by tag, by linked notes, or single note | COL-01 through COL-07 |
 | 10 - Sidebar Redesign | Sidebar supports all four modes with clear navigation | UI-03, UI-04 |
 | 11 - v2.0 Release | README updated; store submission PR open | DIST-03, DIST-04 |
+
+## Key Architecture Decisions (from Phase 09-02 execution)
+
+- 2026-03-21 (09-02): main.ts callers updated in Plan 02 (not deferred to Plan 03) - TS requires all callers to match new CollectionSpec signature at compile time
+- 2026-03-21 (09-02): writeOutput preserved for folder mode; writeOutputToPath used for tag/links/note modes - maintains backward compat with sidebar's _self-test.md convention
+- 2026-03-21 (09-02): LinkedNotesPickerModal uses plain Modal (not SuggestModal) to allow depth checkbox + preview DOM elements alongside search results
 
 ## Key Architecture Decisions (from Phase 09-01 execution)
 
@@ -140,6 +146,8 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 - 2026-03-21: Executed 08-01 (multi-provider LLM adapters) - 2 TDD tasks, 2 commits (631a142 RED, 5962e97 GREEN) - 84 tests pass, 0 TS errors
 - 2026-03-21: Stopped at - Completed 08-01-PLAN.md
 - 2026-03-21: Executed 09-01 (collector pure functions) - 2 TDD tasks, 2 commits (3e665d4 RED, 32011d9 GREEN) - 121 tests pass, 0 TS errors
+- 2026-03-21: Executed 09-02 (GenerationService refactor + modals) - 2 tasks, 2 commits (053e48b, c56f850) - 121 tests pass, 0 TS errors
+- 2026-03-21: Stopped at - Completed 09-02-PLAN.md
 
 ## Accumulated Context
 

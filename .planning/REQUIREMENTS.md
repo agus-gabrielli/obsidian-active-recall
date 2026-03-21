@@ -72,7 +72,7 @@
 - [x] **COL-03**: Tag-based output goes to a `_self-tests/` folder (e.g. `_self-tests/_self-test-python-language.md`)
 - [x] **COL-04**: User can generate a self-test from a root/MOC note plus all its directly linked notes (depth 1)
 - [x] **COL-05**: User can optionally include depth-2 links (links of links) via a toggle in the picker
-- [ ] **COL-06**: User can generate a self-test for a single note (context menu on files + command palette)
+- [x] **COL-06**: User can generate a self-test for a single note (context menu on files + command palette)
 - [x] **COL-07**: Single-note output goes to the same folder as the source note (e.g. `my-note_self-test.md`)
 
 ### UI Updates
@@ -155,7 +155,7 @@
 | COL-03 | Phase 9 | Complete |
 | COL-04 | Phase 9 | Complete |
 | COL-05 | Phase 9 | Complete |
-| COL-06 | Phase 9 | Pending |
+| COL-06 | Phase 9 | Complete |
 | COL-07 | Phase 9 | Complete |
 | UI-03 | Phase 10 | Pending |
 | UI-04 | Phase 10 | Pending |
