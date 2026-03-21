@@ -137,7 +137,11 @@ Plans:
   2. User can enter and save a separate API key for each provider; switching providers does not clear or overwrite keys entered for other providers
   3. An existing v1.0 user who upgrades to v2.0 finds their OpenAI API key and model selection intact - the plugin migrates them automatically without prompting
   4. The model dropdown for each provider shows a curated list appropriate to that provider, plus a custom model option
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 07-01-PLAN.md - Settings interface refactor, PROVIDER_CONFIG, migration helper with tests, generation.ts call site updates (Wave 1)
+- [ ] 07-02-PLAN.md - Rewrite display() for provider-scoped rendering, human-verify in Obsidian (Wave 2)
 
 ### Phase 8: Multi-Provider LLM Dispatch
 **Goal**: The plugin routes generation calls to the correct provider API (OpenAI, Gemini, or Claude) based on the active settings selection, with provider-specific error messages when calls fail
@@ -199,7 +203,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 4. Commands and Sidebar | 3/3 | Complete | 2026-03-12 |
 | 5. Polish and Release | 3/3 | Complete | 2026-03-17 |
 | 6. Refinements | 4/4 | Complete | 2026-03-19 |
-| 7. Provider Settings and Migration | 0/TBD | Not started | - |
+| 7. Provider Settings and Migration | 0/2 | Not started | - |
 | 8. Multi-Provider LLM Dispatch | 0/TBD | Not started | - |
 | 9. Flexible Note Collection | 0/TBD | Not started | - |
 | 10. Sidebar Redesign | 0/TBD | Not started | - |
