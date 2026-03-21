@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: multi-provider-and-flexible-collection
-current_phase: Not started (defining requirements)
+current_phase: 7
 current_plan: —
-status: planning
+status: roadmap complete - ready for phase 7 planning
 last_updated: "2026-03-21"
 progress:
-  total_phases: 0
+  total_phases: 5
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -19,21 +19,52 @@ progress:
 
 See: .planning/PROJECT.md (updated 2026-03-21)
 **Core value:** Users can generate a structured self-test from any folder of notes in one click, turning passive note review into active recall practice.
-**Current focus:** Defining requirements for v2.0
+**Current focus:** v2.0 - Multi-provider LLM support (Gemini, Claude) and flexible note collection (by tag, by linked notes, single note)
 
 ## Position
 
 **Milestone:** v2.0 Multi-Provider & Flexible Collection
-**Current phase:** Not started (defining requirements)
+**Current phase:** 7 (Provider Settings and Migration) - not started
 **Current plan:** -
-**Status:** Defining requirements
-**Last activity:** 2026-03-21 - Milestone v2.0 started
+**Status:** Roadmap complete; ready to plan Phase 7
+**Progress bar:** [----------] 0/5 v2.0 phases complete
+**Last activity:** 2026-03-21 - v2.0 roadmap created (phases 7-11)
 
-## Decisions
+## v2.0 Phase Summary
 
-- 2026-03-11 (04-01): Export buildContextMenuHandler and buildActivateView as factory functions from sidebar.ts for testability - avoids coupling tests to plugin class lifecycle
-- 2026-03-11 (04-01): Use TFile.stat.mtime for last-generated date - simpler than parsing YAML frontmatter, per context discretion
-- 2026-03-11 (04-01): Sidebar eligibility: folders with at least one non-_self-test .md file qualify; self-test-only folders excluded
+| Phase | Goal | Requirements |
+|-------|------|--------------|
+| 7 - Provider Settings and Migration | Users can select and configure any of three LLM providers; existing OpenAI keys migrate automatically | PROV-01, PROV-02, PROV-03, PROV-07 |
+| 8 - Multi-Provider LLM Dispatch | Plugin routes generation to Gemini or Claude APIs; provider-specific error messages | PROV-04, PROV-05, PROV-06 |
+| 9 - Flexible Note Collection | Generate self-tests from notes by tag, by linked notes, or single note | COL-01 through COL-07 |
+| 10 - Sidebar Redesign | Sidebar supports all four modes with clear navigation | UI-03, UI-04 |
+| 11 - v2.0 Release | README updated; store submission PR open | DIST-03, DIST-04 |
+
+## Key Architecture Decisions (from research)
+
+- Settings schema: `LLMProvider = 'openai' | 'gemini' | 'anthropic'`; nested `ProviderConfig { apiKey, model }` per provider
+- Migration check: `if (savedData.apiKey && !savedData.openai?.apiKey)` copies flat key to `openai.apiKey` - must be first code change in Phase 7
+- Central `callLLM(settings, messages)` dispatcher routes to per-provider adapters (not scattered logic)
+- `NoteSource { name, content }` interface stays unchanged - all four collection modes produce the same shape
+- Tag normalization: always `tag.replace(/^#/, '')` - `getAllTags(cache)` returns mixed prefix behavior
+- Link traversal: BFS over `app.metadataCache.resolvedLinks` with visited-set deduplication; only safe after `onLayoutReady()`
+- Sidebar: mode selector tabs (Folder / Tag / Links / Note) with separate DOM subtrees per mode; mode state as instance variable
+- `writeOutputToPath` helper needed for tag/link output paths (existing `writeOutput()` hardcodes folder path)
+
+## Critical Pitfalls for v2.0
+
+- Settings migration wipes existing OpenAI keys via `Object.assign` shallow-merge - migration check is highest priority first commit
+- Anthropic: `x-api-key` header (not `Authorization: Bearer`), `anthropic-version: 2023-06-01` required, `max_tokens` required field
+- Gemini: response at `candidates[0].content.parts[0].text`; truncation is `finishReason === 'MAX_TOKENS'`; empty candidates = SAFETY block
+- Gemini 2.5 bug: `MAX_TOKENS` can accompany empty text candidate - guard explicitly
+- Tag normalization: `getAllTags()` returns inline tags WITH `#` and frontmatter tags WITHOUT - strip before comparing
+- MetadataCache not ready at plugin load - only safe to call from user-triggered actions, never from `onload()`
+
+## Decisions (v1.0 accumulated)
+
+- 2026-03-11 (04-01): Export buildContextMenuHandler and buildActivateView as factory functions from sidebar.ts for testability
+- 2026-03-11 (04-01): Use TFile.stat.mtime for last-generated date
+- 2026-03-11 (04-01): Sidebar eligibility: folders with at least one non-_self-test .md file qualify
 - [Phase 04-02]: Use structural type for getLastGeneratedDate param to avoid mock/real TFile type conflict
 - [Phase 04-02]: buildContextMenuHandler accepts plain generate function as first arg for testability
 - 2026-03-12 (04-03): refreshSidebarIfOpen helper in main.ts provides safe view refresh without holding stale reference
@@ -45,8 +76,8 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 - 2026-03-12 (05-02): API key setup embedded as a numbered step inside Installation (not a separate section)
 - 2026-03-12 (05-02): Three entry points (command palette, context menu, sidebar) all covered in How to use
 - [Phase 05-03]: isDesktopOnly: true - mobile not tested before v1; safe default for store submission
-- 2026-03-18 (06-03): README science section uses inline citations in prose rather than a bibliography - more readable for non-academic Obsidian users
-- 2026-03-18 (06-03): Differentiation section closes with neutral bridging sentence to avoid competitive tone vs LLM Test Generator (Competence)
+- 2026-03-18 (06-03): README science section uses inline citations in prose rather than a bibliography
+- 2026-03-18 (06-03): Differentiation section closes with neutral bridging sentence to avoid competitive tone vs LLM Test Generator
 - [Phase 06-02]: CURATED_MODELS = gpt-4o, gpt-4o-mini, gpt-4.1, gpt-4.1-mini, gpt-4.1-nano; isCustomModel check drives conditional rendering; generatingFolders Set with try/finally ensures cleanup
 - [Phase 06-01]: render() uses split().join() for {{placeholder}} substitution - simple, no regex edge cases
 - [Phase 06-01]: prompts.ts is single source of truth for all LLM prompt text; generation.ts delegates via render()
@@ -78,10 +109,19 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 - 2026-03-18: Stopped at - Completed 06-03-PLAN.md
 - 2026-03-18: Executed 06-04 (build verification + human verify) - 59 tests pass, user approved all 17 checks, 4 post-checkpoint bug fixes (f338b83, f30261f, 5427c75, 580e7c1)
 - 2026-03-18: Stopped at - Completed 06-04-PLAN.md (Phase 06 complete)
+- 2026-03-21: v2.0 roadmap created - 5 phases (7-11), all 17 requirements mapped
 
 ## Accumulated Context
 
 ### Roadmap Evolution
 
 - Phase 6 added: Refinements and improvements
-- Phase 7 added: Final Release - recreate 1.0.0 GitHub release with updated assets + store submission PR (absorbs 05-03 Task 3)
+- Phase 7 replaced: was "Final Release placeholder" - now "Provider Settings and Migration" (first v2.0 phase)
+- v2.0 phases 7-11 added covering PROV-01/07, COL-01/07, UI-03/04, DIST-03/04
+
+### Research Flags for v2.0
+
+- Phase 8 (Providers): Verify Anthropic Claude model IDs against platform.claude.com/docs/en/about-claude/models/overview before hardcoding curated list - model names change frequently
+- Phase 9 (Collectors): All APIs verified from obsidian.d.ts; BFS is standard; see research/PITFALLS.md for edge cases
+- Phase 10 (Sidebar): Tabs design decision made in research/ARCHITECTURE.md; store mode state as instance variables
+- Phase 11 (Release): Re-read current obsidianmd/obsidian-releases submission requirements immediately before opening the PR; decide isDesktopOnly final value (currently true)

@@ -34,9 +34,9 @@
 
 ### Commands & Entry Points
 
-- [x] **CMD-01**: Command palette entry: "Generate Self-Test for Current Folder" — generates `_self-test.md` for the folder containing the active note
-- [x] **CMD-02**: Command palette entry: "Open Active Recall Panel" — opens or focuses the sidebar panel
-- [x] **CMD-03**: Folder context menu item: "Generate Self-Test" — available on right-click of any folder in the file explorer
+- [x] **CMD-01**: Command palette entry: "Generate Self-Test for Current Folder" - generates `_self-test.md` for the folder containing the active note
+- [x] **CMD-02**: Command palette entry: "Open Active Recall Panel" - opens or focuses the sidebar panel
+- [x] **CMD-03**: Folder context menu item: "Generate Self-Test" - available on right-click of any folder in the file explorer
 
 ### Sidebar Panel
 
@@ -143,31 +143,31 @@
 | FB-02 | Phase 3 | Complete |
 | DIST-01 | Phase 1 | Complete |
 | DIST-02 | Phase 5 | Complete |
-| PROV-01 | TBD | Pending |
-| PROV-02 | TBD | Pending |
-| PROV-03 | TBD | Pending |
-| PROV-04 | TBD | Pending |
-| PROV-05 | TBD | Pending |
-| PROV-06 | TBD | Pending |
-| PROV-07 | TBD | Pending |
-| COL-01 | TBD | Pending |
-| COL-02 | TBD | Pending |
-| COL-03 | TBD | Pending |
-| COL-04 | TBD | Pending |
-| COL-05 | TBD | Pending |
-| COL-06 | TBD | Pending |
-| COL-07 | TBD | Pending |
-| UI-03 | TBD | Pending |
-| UI-04 | TBD | Pending |
-| DIST-03 | TBD | Pending |
-| DIST-04 | TBD | Pending |
+| PROV-01 | Phase 7 | Pending |
+| PROV-02 | Phase 7 | Pending |
+| PROV-03 | Phase 7 | Pending |
+| PROV-04 | Phase 8 | Pending |
+| PROV-05 | Phase 8 | Pending |
+| PROV-06 | Phase 8 | Pending |
+| PROV-07 | Phase 7 | Pending |
+| COL-01 | Phase 9 | Pending |
+| COL-02 | Phase 9 | Pending |
+| COL-03 | Phase 9 | Pending |
+| COL-04 | Phase 9 | Pending |
+| COL-05 | Phase 9 | Pending |
+| COL-06 | Phase 9 | Pending |
+| COL-07 | Phase 9 | Pending |
+| UI-03 | Phase 10 | Pending |
+| UI-04 | Phase 10 | Pending |
+| DIST-03 | Phase 11 | Pending |
+| DIST-04 | Phase 11 | Pending |
 
 **Coverage:**
 - v1 requirements: 27 total (all complete)
 - v2.0 requirements: 17 total
-- Mapped to phases: 27 (v2.0 TBD - awaiting roadmap)
-- Unmapped: 17
+- Mapped to phases: 44/44 (100%)
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-21 after v2.0 milestone requirements*
+*Last updated: 2026-03-21 after v2.0 roadmap (phases 7-11)*

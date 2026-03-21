@@ -4,7 +4,9 @@
 
 Five phases that follow the natural dependency order of the plugin: first a working scaffold with the correct manifest and build config, then settings (everything else reads from them), then the generation pipeline (the core value), then the UI entry points that wire into the pipeline, and finally release preparation. Each phase delivers a verifiable capability. Nothing in a later phase can be built without the previous one in place.
 
-## Phases
+---
+
+## v1.0 Phases (Complete - Historical Record)
 
 **Phase Numbering:**
 - Integer phases (1, 2, 3): Planned milestone work
@@ -17,8 +19,21 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 3: Generation Pipeline** - End-to-end self-test generation from note collection through LLM call to _self-test.md output, including batch+synthesize and user feedback (completed 2026-03-10)
 - [x] **Phase 4: Commands and Sidebar** - All entry points wired (command palette, context menu, sidebar panel) calling the live generation pipeline (completed 2026-03-12)
 - [x] **Phase 5: Polish and Release** - Production-quality error handling, README, and GitHub release published (store submission deferred to Phase 6)
+- [x] **Phase 6: Refinements** - Prompt quality (Mermaid concept maps, contextual hints, source traceability), model dropdown, sidebar spinner, README science section (completed 2026-03-19)
 
-## Phase Details
+---
+
+## v2.0 Phases
+
+- [ ] **Phase 7: Provider Settings and Migration** - Users can select and configure any of three LLM providers with per-provider API keys and model selection; existing OpenAI keys are migrated automatically
+- [ ] **Phase 8: Multi-Provider LLM Dispatch** - Plugin successfully calls Gemini and Claude APIs in addition to OpenAI; provider-specific errors are surfaced with the provider name
+- [ ] **Phase 9: Flexible Note Collection** - Users can generate self-tests from notes by tag, by linked notes from a root note, or from a single note
+- [ ] **Phase 10: Sidebar Redesign** - Sidebar supports all four generation modes with clear navigation and shows tag/link-based self-tests alongside folder-based ones
+- [ ] **Phase 11: v2.0 Release** - README updated with multi-provider and collection mode documentation; plugin passes Obsidian store review and PR is submitted
+
+---
+
+## v1.0 Phase Details (Historical)
 
 ### Phase 1: Foundation
 **Goal**: A working Obsidian plugin scaffold that loads cleanly, uses the correct build config, has a store-compliant manifest, and establishes the requestUrl() HTTP pattern before any feature work begins
@@ -46,7 +61,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 02-01-PLAN.md - Populate settings interface/defaults, implement full settings tab display(), remove smoke test
+- [x] 02-01-PLAN.md - Populate settings interface/defaults, implement full settings tab display(), remove smoke test
 
 ### Phase 3: Generation Pipeline
 **Goal**: A user can trigger generation from the command palette and get a correctly formatted _self-test.md written to the selected folder, with token budget enforcement, batch+synthesize for large folders, and clear progress and error feedback throughout
@@ -97,39 +112,95 @@ Plans:
 - [x] 05-02-PLAN.md - Rewrite README.md for non-technical Obsidian users (Wave 1)
 - [x] 05-03-PLAN.md - Mobile decision, production build, GitHub release 1.0.0 published (Wave 2); store submission deferred to Phase 6
 
+### Phase 6: Refinements
+**Goal**: Improve prompt quality (Mermaid concept maps, contextual hints, source traceability), UX polish (model dropdown, sidebar loading spinner), and README (science foundations, differentiation) before the final store submission
+**Requirements**: REFINE-PROMPTS, REFINE-UI, REFINE-README, REFINE-VERIFY
+**Depends on**: Phase 5
+**Plans**: 4/4 plans complete
+
+Plans:
+- [x] 06-01-PLAN.md - Extract prompts to src/prompts.ts with Mermaid concept maps, contextual hints, source traceability (Wave 1)
+- [x] 06-02-PLAN.md - Model selection dropdown in settings + sidebar loading spinner (Wave 1)
+- [x] 06-03-PLAN.md - README science foundations and differentiation from LLM Test Generator (Wave 1)
+- [x] 06-04-PLAN.md - Build, test, and human-verify all refinements in Obsidian (Wave 2)
+
+---
+
+## v2.0 Phase Details
+
+### Phase 7: Provider Settings and Migration
+**Goal**: Users can select any of three LLM providers (OpenAI, Gemini, Claude) in settings with per-provider API key fields and model dropdowns; existing v1.0 users' OpenAI keys are preserved automatically on first load
+**Depends on**: Phase 6
+**Requirements**: PROV-01, PROV-02, PROV-03, PROV-07
+**Success Criteria** (what must be TRUE):
+  1. User can open settings and select OpenAI, Gemini, or Claude from a provider dropdown; the settings panel shows the correct API key field and model list for the selected provider
+  2. User can enter and save a separate API key for each provider; switching providers does not clear or overwrite keys entered for other providers
+  3. An existing v1.0 user who upgrades to v2.0 finds their OpenAI API key and model selection intact - the plugin migrates them automatically without prompting
+  4. The model dropdown for each provider shows a curated list appropriate to that provider, plus a custom model option
+**Plans**: TBD
+
+### Phase 8: Multi-Provider LLM Dispatch
+**Goal**: The plugin routes generation calls to the correct provider API (OpenAI, Gemini, or Claude) based on the active settings selection, with provider-specific error messages when calls fail
+**Depends on**: Phase 7
+**Requirements**: PROV-04, PROV-05, PROV-06
+**Success Criteria** (what must be TRUE):
+  1. With Gemini selected and a valid Google AI Studio key, generation produces a correctly formatted _self-test.md using the Gemini API (generativelanguage.googleapis.com)
+  2. With Claude selected and a valid Anthropic key, generation produces a correctly formatted _self-test.md using the Anthropic Messages API (api.anthropic.com)
+  3. When a Gemini API call fails (wrong key, quota exceeded), the error message names Gemini specifically (e.g. "Gemini API key invalid") rather than showing a generic error
+  4. When a Claude API call fails, the error message names Claude specifically; raw HTTP error strings are not shown to users
+**Plans**: TBD
+
+### Phase 9: Flexible Note Collection
+**Goal**: Users can generate self-tests from notes gathered by tag, by following links from a root note, or from a single note - in addition to the existing folder mode
+**Depends on**: Phase 7
+**Requirements**: COL-01, COL-02, COL-03, COL-04, COL-05, COL-06, COL-07
+**Success Criteria** (what must be TRUE):
+  1. User can trigger tag-based generation from the command palette; a tag picker modal appears with autocomplete/filtering over all vault tags; selecting a tag collects all matching notes and generates a self-test written to `_self-tests/_self-test-<tag>.md`
+  2. User can trigger linked-notes generation from the command palette; a note picker appears; selecting a root note collects the root note plus all its directly linked notes (depth 1) and generates a self-test in `_self-tests/`
+  3. A depth-2 toggle in the linked-notes picker extends collection to links-of-links; toggling it on and triggering generation includes the second layer of linked notes
+  4. Right-clicking any markdown file in the file explorer shows a "Generate Self-Test" option; selecting it generates a self-test for that single note written to the same folder as the source note (e.g. `my-note_self-test.md`)
+  5. All three new modes feed the existing batch+synthesize pipeline unchanged - large note sets are handled without manual intervention
+**Plans**: TBD
+
+### Phase 10: Sidebar Redesign
+**Goal**: The sidebar presents all four generation modes (folder, tag, linked notes, single note) in a clear navigable structure, and shows tag-based and link-based self-tests alongside folder-based ones
+**Depends on**: Phase 9
+**Requirements**: UI-03, UI-04
+**Success Criteria** (what must be TRUE):
+  1. The sidebar displays mode selector tabs (or equivalent navigation) for Folder, Tag, Links, and Note; switching between them renders a panel appropriate to that mode
+  2. The Tag panel lists previously generated tag-based self-tests with their last-generated date and a Regenerate button, plus an input to generate for a new tag
+  3. The Links panel lists previously generated link-based self-tests from `_self-tests/` alongside the folder-based ones; each shows last-generated date and a Regenerate button
+  4. After generation from any mode completes, the sidebar reflects the updated state without requiring a manual refresh
+**Plans**: TBD
+
+### Phase 11: v2.0 Release
+**Goal**: README documents multi-provider setup and all new collection modes clearly; the plugin passes Obsidian community store review requirements and the submission PR is open against obsidianmd/obsidian-releases
+**Depends on**: Phase 10
+**Requirements**: DIST-03, DIST-04
+**Success Criteria** (what must be TRUE):
+  1. README includes setup instructions for Google AI Studio and Anthropic API keys, with links to where users get them; existing OpenAI instructions remain accurate
+  2. README documents all four generation modes (folder, tag, linked notes, single note) with enough detail for a non-technical user to use each one
+  3. manifest.json version is bumped to 2.0.0; GitHub release tag matches exactly (no `v` prefix); all store submission checklist items pass
+  4. PR is open against obsidianmd/obsidian-releases with the required files (manifest.json, main.js, styles.css) attached to the GitHub release
+**Plans**: TBD
+
+---
+
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10 -> 11
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 1/1 | Complete | 2026-03-09 |
-| 2. Settings | 1/1 | Complete   | 2026-03-10 |
+| 2. Settings | 1/1 | Complete | 2026-03-10 |
 | 3. Generation Pipeline | 3/3 | Complete | 2026-03-10 |
-| 4. Commands and Sidebar | 3/3 | Complete   | 2026-03-12 |
+| 4. Commands and Sidebar | 3/3 | Complete | 2026-03-12 |
 | 5. Polish and Release | 3/3 | Complete | 2026-03-17 |
-| 6. Refinements | 4/4 | Complete   | 2026-03-19 |
-
-### Phase 6: Refinements and improvements
-
-**Goal:** Improve prompt quality (Mermaid concept maps, contextual hints, source traceability), UX polish (model dropdown, sidebar loading spinner), and README (science foundations, differentiation) before the final store submission in Phase 7
-**Requirements**: REFINE-PROMPTS, REFINE-UI, REFINE-README, REFINE-VERIFY
-**Depends on:** Phase 5
-**Plans:** 4/4 plans complete
-
-Plans:
-- [ ] 06-01-PLAN.md - Extract prompts to src/prompts.ts with Mermaid concept maps, contextual hints, source traceability (Wave 1)
-- [ ] 06-02-PLAN.md - Model selection dropdown in settings + sidebar loading spinner (Wave 1)
-- [x] 06-03-PLAN.md - README science foundations and differentiation from LLM Test Generator (Wave 1)
-- [ ] 06-04-PLAN.md - Build, test, and human-verify all refinements in Obsidian (Wave 2)
-
-### Phase 7: Final Release - recreate the 1.0.0 GitHub release with updated assets, then open the store submission PR (essentially absorbs 05-03 Task 3 + a fresh build)
-
-**Goal:** [To be planned]
-**Requirements**: TBD
-**Depends on:** Phase 6
-**Plans:** 0 plans
-
-Plans:
-- [ ] TBD (run /gsd:plan-phase 7 to break down)
+| 6. Refinements | 4/4 | Complete | 2026-03-19 |
+| 7. Provider Settings and Migration | 0/TBD | Not started | - |
+| 8. Multi-Provider LLM Dispatch | 0/TBD | Not started | - |
+| 9. Flexible Note Collection | 0/TBD | Not started | - |
+| 10. Sidebar Redesign | 0/TBD | Not started | - |
+| 11. v2.0 Release | 0/TBD | Not started | - |
