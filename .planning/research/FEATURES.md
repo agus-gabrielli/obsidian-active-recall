@@ -1,225 +1,316 @@
 # Feature Research
 
 **Domain:** Obsidian community plugin - active recall / self-testing from notes
-**Researched:** 2026-03-09
-**Confidence:** MEDIUM-HIGH (ecosystem well-documented; some gaps in qualitative user data)
+**Researched:** 2026-03-21 (updated for v2.0 milestone)
+**Confidence:** HIGH for API mechanics; MEDIUM for UX patterns (verified against real plugin source and official API docs)
 
 ---
 
-## Competitor Landscape
+## Scope Note (v2.0 Milestone)
 
-Before the feature breakdown, here is the competitive context this plugin enters.
+v1.0 features (folder-based generation, OpenAI, sidebar, batch+synthesize, prompts.ts templates) are **already built**. This document focuses on what is **new in v2.0**:
 
-| Plugin | Approach | Status | Gap |
-|--------|----------|--------|-----|
-| obsidian-spaced-repetition | Manual flashcard syntax in notes + SM2/FSRS scheduling | Active, widely used | Requires manual card authoring; no AI generation |
-| Quiz Generator (ECuiDev) | AI-generated multi-type quiz from notes/folders, interactive UI | Stale (500 days since last commit), 44/100 score | Abandoned; multiple choice focus; output lives in plugin UI, not portable markdown |
-| Flashcard Generator (chloedia) | AI Q&A generation per note, outputs to Spaced Repetition format | Low adoption | Single-note focus; outputs cards, not open-ended study material |
-| Spaced Repetition AI (SRAI) | AI flashcard generation + FSRS scheduling embedded in notes | Active | Flashcard format only; no open-ended questions or concept orientation |
-| Smart Connections | Semantic search + chat over vault | Active, popular | Discovery tool, not study/recall tool |
-| Flashcards (reuseman) | Anki sync from vault | Active | Requires Anki install; manual card creation |
-| Easy Test | Converts bold text to interactive quiz fields | Active | Not AI; requires manual formatting of source notes |
+1. Multi-provider LLM support (Gemini, Claude)
+2. Generation by tag
+3. Generation by linked notes (depth-1, optional depth-2)
+4. Single-note generation
+5. Final community store release
 
-**Key gap this plugin fills:** No existing plugin generates open-ended, pedagogically ordered recall questions from a folder of notes as a portable markdown file. Existing AI tools either produce closed-format questions (multiple choice, flashcards) or require an interactive plugin UI to review. None produce a concept map alongside questions. None output plain `.md` that survives plugin removal.
+The v1.0 feature landscape (competitor analysis, table stakes that are already shipped) is preserved at the bottom for reference.
 
 ---
 
-## Feature Landscape
+## V2.0 Feature Landscape
 
-### Table Stakes (Users Expect These)
+### Table Stakes for This Milestone (Users Expect These)
 
-Features users assume exist. Missing these = product feels incomplete.
+Features that feel broken or incomplete if absent from the v2.0 release.
 
 | Feature | Why Expected | Complexity | Notes |
 |---------|--------------|------------|-------|
-| Generate questions from note content | Core purpose of the plugin | LOW | Already designed; the LLM prompt does the work |
-| Settings tab with API key input | Every AI plugin in Obsidian has this | LOW | Provider, model, API key at minimum |
-| Command palette entry | Obsidian power users navigate by command; a plugin with no command feels unfinished | LOW | "Generate Self-Test for Current Folder" is sufficient |
-| Works on the current folder | Folder is the natural unit of a topic in Obsidian | LOW | Already scoped to folder-level generation |
-| Output written to a markdown file | Users expect to be able to read, edit, and share the result like any other note | LOW | `_self-test.md` pattern is clean |
-| Regeneration / update | Users will change notes and want a fresh test | LOW | Overwrite on re-run is acceptable for v1 |
-| Feedback when generation is in progress | LLM calls take seconds to minutes; silent waiting feels broken | LOW | Status bar message or modal spinner |
-| Error messaging when API call fails | Wrong key, network error, rate limit - all common; silent failure is unacceptable | LOW | Show actionable error in Notice or modal |
-| Mobile compatibility | Obsidian mobile is widely used; plugin should not crash on mobile | MEDIUM | API key input is awkward on mobile but must not break |
+| Provider selector in settings with live API key + model fields | Any multi-provider AI plugin shows different config fields per provider; a single static API key field feels half-done | MEDIUM | Requires `display()` to re-render conditionally based on provider; existing `settings.ts` pattern already does this for the model dropdown |
+| Per-provider model dropdowns with curated lists | Users don't know Gemini/Claude model IDs off-hand; a "gemini-2.5-flash" dropdown is expected | LOW | Static curated arrays per provider, same pattern as existing `CURATED_MODELS` for OpenAI |
+| Each provider's API key stored separately | Switching providers must not erase the other key; users test both and compare | MEDIUM | Expand `ActiveRecallSettings` from one `apiKey: string` to `openAIApiKey`, `geminiApiKey`, `claudeApiKey` per-field; matches Obsidian Copilot's proven pattern |
+| Tag picker modal when generating by tag | Users expect a fuzzy-search selector (like Obsidian's built-in quick-switcher feel) not a raw text input | MEDIUM | `FuzzySuggestModal` subclass; use `app.vault.getMarkdownFiles()` + `app.metadataCache.getAllTags(cache)` to build tag list |
+| Output to `_self-tests/` folder for tag/link modes | Tag and link collections span multiple folders; the output cannot live inside one folder like folder-mode does | LOW | Flat folder `_self-tests/` at vault root or user-configurable path; file named after tag/root note |
+| Single-note generation accessible from context menu | Right-clicking a file and not seeing a "Generate Self-Test" option feels missing once you have right-click on folders | LOW | Add `registerEvent` on file context menu alongside existing folder context menu handler |
+| Error messages updated for each provider | "Invalid API key" makes sense for OpenAI; Gemini returns 400 with different error shapes | MEDIUM | Per-provider `classifyError` branches; Gemini uses `x-goog-api-key` 400/403; Claude uses `x-api-key` 401 |
 
-### Differentiators (Competitive Advantage)
+### Differentiators for V2.0
 
-Features that set the product apart. Not required, but valued.
+Features that set this release apart from competitors that do multi-provider.
 
 | Feature | Value Proposition | Complexity | Notes |
 |---------|-------------------|------------|-------|
-| Open-ended questions ordered foundational to advanced | Matches how humans actually learn - concepts before applications. No existing plugin does this ordering. | MEDIUM | Requires prompt engineering; LLM does the heavy lifting |
-| Question categories (Conceptual / Relationships / Application) | Makes the study session structured, not random. Helps users know what kind of thinking is expected. | LOW | Prompt-side; just instruct the LLM to categorize |
-| Collapsible hints per question | Reduces friction vs. just scrolling to the answer. Stays in native Obsidian syntax - no custom rendering needed. | LOW | `> [!hint]-` callout with `+`/`-` suffix is standard Obsidian |
-| Collapsible reference answers per question | Enables self-grading without spoiling the answer immediately. Other plugins show answers in a modal/UI; this stays in your notes. | LOW | Same callout pattern as hints |
-| Concept map before questions | Orients the learner before diving into recall. No existing Obsidian recall plugin does this. | MEDIUM | Text-based concept map in markdown; prompt-engineering challenge |
-| Plain `.md` output - no plugin lock-in | Output is readable, searchable, and editable without the plugin installed. Users deeply value Obsidian's portability ethos. | LOW | Architectural decision already made; keep it |
-| Folder-level generation from sidebar panel | One-click from a visual panel vs. navigating menus. Lists folders with/without tests, shows which are stale. | MEDIUM | Leaf view / sidebar panel; requires Obsidian ItemView API |
-| Context menu on folders | Zero-friction entry point; right-click a folder = generate. Feels native. | LOW | WorkspaceLeaf contextmenu event on folder items |
-| Batch + synthesize for large folders | Graceful handling of any folder size. Quiz Generator has a hard limit (10 questions cap); this plugin has none. | HIGH | Most complex piece; requires chunked LLM calls + synthesis pass |
-| User-configurable toggles (hints / answers / map) | Different learners want different formats. Some want hints-only, some want no concept map. | LOW | Settings checkboxes; condition prompt accordingly |
-| Custom instructions field | Power users want to tune the LLM prompt (e.g. "focus on clinical applications", "use Socratic style"). | LOW | Append to system prompt; minimal implementation work |
-| Language selection | Non-English Obsidian users are a significant part of the community. Forcing English output is an unnecessary limitation. | LOW | Single setting; instruct LLM to respond in target language |
+| Gemini 2.5 Flash as default Gemini model | Flash is the best price/quality for this use case - generous free tier in AI Studio, fast, high context window | LOW | Model ID: `gemini-2.5-flash`; direct REST to `https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent` with `x-goog-api-key` header; no SDK needed |
+| Claude claude-sonnet-4-5 as default Claude model | Sonnet is the correct middle ground for generation tasks; Haiku is too weak, Opus too expensive | LOW | Direct REST to `https://api.anthropic.com/v1/messages` with `x-api-key` + `anthropic-version: 2023-06-01` headers; no SDK |
+| Tag-based collection across entire vault | Lets users study a concept that spans multiple folders (e.g., "#biochemistry" pulling notes from 4 folders) | MEDIUM | `app.vault.getMarkdownFiles()` iterate + `app.metadataCache.getAllTags(cache)?.includes('#tag')` filter; output to `_self-tests/tag-{tagname}.md` |
+| Linked notes (MOC) collection | Lets users generate a test from a Map of Content note by following its outgoing wikilinks - mirrors how PKM users structure knowledge | MEDIUM | `app.metadataCache.resolvedLinks[file.path]` gives `{ "path/to/note.md": count }`; depth-2 requires one extra iteration; visit each destination path via `app.vault.getAbstractFileByPath` |
+| No external SDK dependencies for any provider | Obsidian community review discourages large bundles; `requestUrl` handles all HTTP without adding `@google/genai` or `@anthropic-ai/sdk` to the bundle | LOW | Both Gemini and Claude native APIs are simple enough to call with raw `requestUrl`; proven pattern already used for OpenAI |
+| Single-note generation with output beside the note | Covers exam-prep use case: "just test me on this one file I'm reviewing now" | LOW | Output path: `{note-basename}_self-test.md` in same folder as source note |
 
-### Anti-Features (Commonly Requested, Often Problematic)
+### Anti-Features for V2.0
 
-Features that seem good but create problems.
+Features that seem like natural extensions but create problems.
 
 | Feature | Why Requested | Why Problematic | Alternative |
 |---------|---------------|-----------------|-------------|
-| Built-in spaced repetition scheduling | Users want to be told when to review | Adds significant state management (YAML frontmatter, due-date tracking, review queues); v1 scope doubles overnight. obsidian-spaced-repetition already does this well. | Design `_self-test.md` YAML frontmatter to be compatible with SR plugins in v2. Let existing tools handle scheduling. |
-| Interactive quiz UI inside Obsidian | Quiz Generator has this; users expect it | Requires a custom rendered view, React or canvas API, event handling, scoring state - multiply implementation cost by 3x. Output becomes non-portable. | Collapsible callouts in plain markdown achieve 80% of the value with 5% of the complexity. Users grade themselves. |
-| Automatic backup of previous self-tests | Users fear losing old versions | Adds file management complexity, backup naming conventions, cleanup logic. Obsidian's own history or git handles this better. | Document in README: rename `_self-test.md` before regenerating if you want to preserve it. |
-| Real-time / auto-regeneration on note save | "Keep tests fresh automatically" | Silent LLM calls on every save = surprise API charges, rate limiting, and latency spikes. | Provide a "Regenerate" button. Let the user control when to spend tokens. |
-| Cloud sync of test results / progress | Shared review progress across devices | Requires backend infrastructure, auth, privacy policy. Violates Obsidian's local-first model. | YAML frontmatter in `_self-test.md` for last-reviewed date is sufficient; Obsidian Sync handles the file itself. |
-| Bundled API key / free tier | Lower friction for new users | Violates Obsidian plugin review guidelines (no bundled credentials). Creates cost liability for the developer. | User-provided API key is the standard for every AI plugin in the ecosystem. |
-| Recursive folder scanning | "Just scan everything" | Unpredictable scope; large vaults could produce 50-note contexts blowing past token budgets silently. Users lose control of what's included. | Non-recursive is intentional. Users manage depth by folder structure. Document this clearly. |
+| OpenAI-compatible proxy for Gemini/Claude | "One adapter, all providers" - avoid duplicate HTTP code | Gemini's native API has different request/response shapes (no `choices`, uses `candidates`); forcing OpenAI compatibility loses native error handling and model-specific fields. Gemini DOES offer an OpenAI-compat endpoint but it has compliance issues (per developer forum reports) | Write a thin per-provider `callLLM` variant (or a provider adapter pattern) that normalizes to string output; keeps code readable without proxy coupling |
+| Dynamic model discovery (fetch model list from API) | Users want to see new models immediately | Requires an authenticated API call on settings load; adds latency, error surface, and a "Refresh models" button UI; Copilot has this and it's a source of support issues | Maintain curated model arrays in code; update on plugin releases; add "Custom model..." escape hatch (already proven pattern in settings.ts) |
+| Depth-3+ link traversal | "Include everything transitively linked" | Vault-wide traversal at depth-3 can pull in hundreds of notes, blowing token budgets silently and including unrelated notes; graph traversal complexity grows fast | Hard cap at depth-2; document the reasoning; let users create a focused MOC note if they need more scope |
+| Recursive tag matching (subtags) | "#flashcards/physics" should match "#flashcards" queries | Obsidian tag hierarchy is a UX convention, not an API feature; subtag matching requires string-prefix logic and produces surprising results | Match exact tags only in v2.0; document that `#physics` and `#flashcards/physics` are distinct |
+| Store all provider keys in one `apiKey` field with a prefix | Simpler settings schema | Impossible to tell which key belongs to which provider without parsing; error-prone; Obsidian Copilot's per-field pattern is the established convention | Per-provider fields (`openAIApiKey`, `geminiApiKey`, `claudeApiKey`) - simple, readable, easily extensible |
 
 ---
 
-## Feature Dependencies
+## Feature Dependencies (V2.0)
 
 ```
-[Settings Tab - API key, provider, model]
-    └──required by──> [LLM Generation Pipeline]
-                          └──required by──> [Question Generation]
-                          └──required by──> [Concept Map Generation]
-                          └──required by──> [Batch + Synthesize]
+[Multi-provider settings schema]
+    └──required by──> [Provider selector UI in settings tab]
+    └──required by──> [callLLM routing logic]
+                          └──calls──> [OpenAI callLLM (existing)]
+                          └──calls──> [Gemini callLLM (new)]
+                          └──calls──> [Claude callLLM (new)]
 
-[Note Collection - NoteSource interface]
-    └──required by──> [LLM Generation Pipeline]
+[NoteSource interface (existing)]
+    └──required by──> [Folder collection (existing)]
+    └──required by──> [Tag collection (new)]
+                          └──depends on──> [MetadataCache.getAllTags]
+                          └──depends on──> [FuzzySuggestModal for tag picker]
+    └──required by──> [Linked notes collection (new)]
+                          └──depends on──> [MetadataCache.resolvedLinks]
+                          └──depends on──> [Root note picker modal]
+    └──required by──> [Single note collection (new)]
 
-[LLM Generation Pipeline]
-    └──required by──> [_self-test.md file output]
-                          └──enhances──> [Sidebar Panel - stale/fresh status]
+[Tag collection / Linked notes collection]
+    └──produces output──> [_self-tests/ folder]
+                              └──conflicts with──> [existing writeOutput() path logic]
+                              (writeOutput writes to folder/_self-test.md; new modes need a different path)
 
-[Sidebar Panel (ItemView)]
-    └──enhances──> [Folder-level Generate / Regenerate workflow]
+[Provider selector]
+    └──enhances──> [Per-provider model dropdown]
+    └──enhances──> [Per-provider API key field]
+    └──triggers──> [settings.display() re-render]
 
-[Settings toggles - hints / answers / map on/off]
-    └──configures──> [LLM Generation Pipeline - prompt construction]
-
-[Batch + Synthesize]
-    └──required when──> [folder exceeds token budget]
-    └──depends on──> [LLM Generation Pipeline]
-
-[Spaced repetition scheduling (v2)]
-    └──depends on──> [_self-test.md YAML frontmatter - last_review, next_review]
-    └──conflicts with──> [built-in review UI] (don't build both; delegate to SR plugins)
+[classifyError]
+    └──must branch on──> [provider] to handle Gemini 400/403 and Claude 401 shapes
 ```
 
 ### Dependency Notes
 
-- **Settings Tab is required by everything:** No API key = no generation. Settings must be the first thing a user configures. Onboarding should surface this immediately (modal or notice on first run if key is absent).
-- **NoteSource abstraction required by pipeline:** The v1 folder reader is one implementation. v2 tag-based and graph-based collection modes slot in here without changing the generation pipeline.
-- **Batch + Synthesize depends on the base pipeline:** It is not a separate path - it reuses the generation pipeline and adds a synthesis pass. Build the single-batch case first, then layer batching on top.
-- **YAML frontmatter must not conflict with v2 SR:** `last_review`, `next_review`, `review_count`, `review_interval_days` keys should be reserved even if unpopulated in v1. Avoids a breaking migration later.
-- **Interactive quiz UI conflicts with portable markdown output:** Choosing one precludes the other as a primary UX. This plugin's identity is the markdown-first approach.
+- **Multi-provider settings schema is the first blocker:** Nothing else in v2.0 builds until `ActiveRecallSettings` has `geminiApiKey`, `claudeApiKey`, `geminiModel`, `claudeModel`, and the `LLMProvider` type is expanded to `'openai' | 'gemini' | 'claude'`.
+- **`writeOutput()` needs a mode-aware variant:** Current function hardcodes `${folderPath}/_self-test.md`. Tag and link modes have no folder - they need `_self-tests/${tagName}.md` or `_self-tests/${rootNoteName}.md`. Refactor or overload rather than patch.
+- **`FuzzySuggestModal` for tag picker is straightforward:** Extend the class, implement `getItems()` (return all unique tags from vault), `getItemText()` (return tag string), `onChooseSuggestion()` (trigger generation). No API surprises.
+- **`resolvedLinks` for link collection is stable API:** Shape is `Record<string, Record<string, number>>` where outer key is source path and inner key is destination path. Depth-1 is a direct lookup; depth-2 is one more iteration over the depth-1 set.
+- **No SDK dependencies keeps bundle clean:** Gemini and Claude both support raw HTTP. This avoids Obsidian review issues with large or unexpected bundled dependencies.
 
 ---
 
-## MVP Definition
+## MVP Definition for V2.0
 
-### Launch With (v1)
+### Ship With V2.0
 
-Minimum viable product - what's needed to validate the concept.
+The minimum to call this milestone done and release to the store.
 
-- [ ] Settings tab - API key, provider (OpenAI), model selection - required before any generation works
-- [ ] Folder-level note collection (non-recursive, excludes `_self-test.md`) - the input
-- [ ] LLM generation: open-ended questions ordered foundational to advanced, categorized - the core output
-- [ ] Collapsible hint + reference answer per question using native Obsidian callout syntax - the key UX differentiator
-- [ ] Concept map section before questions (when content supports it) - the orientation feature
-- [ ] Write output to `_self-test.md` in the selected folder - the portability contract
-- [ ] Command palette: "Generate Self-Test for Current Folder" - minimum viable entry point
-- [ ] Context menu on folders: "Generate Self-Test" - natural discovery path
-- [ ] Sidebar panel (leaf view): folder list with Generate / Regenerate buttons - primary workflow surface
-- [ ] Batch + synthesize for folders exceeding token budget - required for correctness on real-world vaults
-- [ ] Progress feedback (status bar or modal) + error messaging - required for production quality
-- [ ] Settings toggles: hints on/off, answers on/off, concept map on/off - low cost, high user value
-- [ ] Language selection setting - low friction for non-English users
+- [ ] `LLMProvider` type expanded to `'openai' | 'gemini' | 'claude'`
+- [ ] Settings: per-provider API key fields (openAI, Gemini, Claude) visible only when that provider is selected
+- [ ] Settings: per-provider model dropdowns with curated lists + "Custom model..." escape hatch
+- [ ] Gemini REST caller using `requestUrl` to `generativelanguage.googleapis.com`
+- [ ] Claude REST caller using `requestUrl` to `api.anthropic.com/v1/messages`
+- [ ] `callLLM` routed by provider (dispatch to correct caller)
+- [ ] Error classification updated for Gemini and Claude HTTP error shapes
+- [ ] Tag-based collection: `FuzzySuggestModal` tag picker + `getAllTags` vault scan + output to `_self-tests/`
+- [ ] Linked notes collection: root note picker modal + `resolvedLinks` depth-1 traversal + optional depth-2 toggle + output to `_self-tests/`
+- [ ] Single-note generation: file context menu entry + output to `{basename}_self-test.md` beside source
+- [ ] All three new collection modes wired through existing `GenerationService` pipeline (batch+synthesize still applies)
+- [ ] Community store release (manifest, README updated, PR opened against obsidianmd/obsidian-releases)
 
-### Add After Validation (v1.x)
+### Defer to V2.x
 
-Features to add once core generation is working and users are giving feedback.
+Features that are valuable but not required to ship.
 
-- [ ] Single-note generation (`my-note_self-test.md`) - trigger: user feedback that folder scope is too coarse
-- [ ] Anthropic provider support - trigger: user requests; abstraction already in place
-- [ ] Custom LLM endpoint support - trigger: self-hosting / privacy-focused user requests
-- [ ] Content change detection in sidebar (show "stale" indicator when notes are newer than `_self-test.md`) - trigger: users regenerating too frequently or not knowing when to regenerate
+- [ ] Content-change stale detection in sidebar (show "stale" when notes are newer than `_self-test.md`) - trigger: user feedback
+- [ ] Depth-2 link traversal as a settings toggle rather than per-invocation - can ship depth-1 only first and add the toggle after
+- [ ] `_self-tests/` output folder path as a user-configurable setting - default is fine for now
 
-### Future Consideration (v2+)
+### Future (V3+)
 
-Features to defer until product-market fit is established.
-
-- [ ] Spaced repetition scheduling - YAML frontmatter + review queue + due-date tracking. High complexity. Existing plugins (obsidian-spaced-repetition, SRAI) already do this well; integrate rather than replicate.
-- [ ] Tag-based collection mode - gather notes by tag across folders. Architecture-ready (NoteSource interface), but the UX for selecting tags needs design work.
-- [ ] Link graph collection mode - gather notes by Obsidian backlink graph depth. Novel, potentially powerful, requires graph traversal.
-- [ ] Manual note selection - multi-select from file browser to create ad-hoc study sets. Useful for exam prep scenarios.
+- [ ] Spaced repetition scheduling - deferred; YAML frontmatter is pre-reserved
+- [ ] Manual multi-note selection (exam-prep ad-hoc sets)
+- [ ] Custom LLM endpoint / OpenRouter support
 
 ---
 
-## Feature Prioritization Matrix
+## Feature Prioritization Matrix (V2.0)
 
 | Feature | User Value | Implementation Cost | Priority |
 |---------|------------|---------------------|----------|
-| LLM question generation (folder) | HIGH | MEDIUM | P1 |
-| Settings tab + API key | HIGH | LOW | P1 |
-| Collapsible hints + answers | HIGH | LOW | P1 |
-| Plain `.md` output | HIGH | LOW | P1 |
-| Command palette entry | HIGH | LOW | P1 |
-| Concept map section | HIGH | MEDIUM | P1 |
-| Progress + error feedback | HIGH | LOW | P1 |
-| Context menu on folders | MEDIUM | LOW | P1 |
-| Sidebar panel | MEDIUM | MEDIUM | P1 |
-| Batch + synthesize | HIGH | HIGH | P1 (correctness) |
-| Settings toggles (hints/answers/map) | MEDIUM | LOW | P1 |
-| Language selection | MEDIUM | LOW | P1 |
-| Single-note generation | MEDIUM | LOW | P2 |
-| Stale content detection | MEDIUM | MEDIUM | P2 |
-| Additional LLM providers | MEDIUM | LOW | P2 |
-| Tag-based collection | MEDIUM | MEDIUM | P3 |
-| Spaced repetition scheduling | HIGH | HIGH | P3 |
-| Interactive quiz UI | LOW | HIGH | P3 (anti-feature for v1) |
-
-**Priority key:**
-- P1: Must have for launch
-- P2: Should have, add when possible
-- P3: Nice to have, future consideration
+| Gemini provider support | HIGH | MEDIUM | P1 |
+| Claude provider support | HIGH | MEDIUM | P1 |
+| Per-provider settings UI | HIGH | MEDIUM | P1 |
+| Tag-based collection | HIGH | MEDIUM | P1 |
+| Linked notes collection | HIGH | MEDIUM | P1 |
+| Single-note generation | MEDIUM | LOW | P1 |
+| Updated error classification | HIGH | LOW | P1 (correctness) |
+| `_self-tests/` output path refactor | HIGH | LOW | P1 (required by tag+link modes) |
+| Depth-2 link traversal toggle | MEDIUM | LOW | P2 |
+| Configurable `_self-tests/` folder path | LOW | LOW | P2 |
+| Stale content detection in sidebar | MEDIUM | MEDIUM | P2 |
 
 ---
 
-## Competitor Feature Analysis
+## Implementation Notes
 
-| Feature | obsidian-spaced-repetition | Quiz Generator (ECuiDev) | Flashcard Generator (chloedia) | This Plugin |
-|---------|---------------------------|--------------------------|-------------------------------|-------------|
-| AI question generation | No | Yes (multi-type) | Yes (Q&A only) | Yes (open-ended, ordered) |
-| Output format | Inline syntax in source notes | Plugin UI (non-portable) | Flashcard syntax for SR plugin | Plain `.md` file |
-| Question types | Flashcard / cloze | MC, T/F, matching, SA, LA | Q&A pairs | Open-ended recall (conceptual, relational, application) |
-| Concept map | No | No | No | Yes (text-based, conditional) |
-| Hints | No | No | No | Yes (collapsible callout) |
-| Folder-level generation | No (note-level) | Yes | No (note-level) | Yes |
-| Spaced repetition scheduling | Yes (SM2/FSRS) | No | No (delegates to SR plugin) | No (v2) |
-| Works without plugin installed | No | No | No | Yes (plain `.md`) |
-| Active maintenance | Yes | No (500 days stale) | Low | New |
-| Multiple LLM providers | No | Yes (7 providers) | Yes (OpenAI + Ollama) | OpenAI v1; abstracted for more |
-| Mobile support | Partial | Unknown | Unknown | Yes (must not break) |
+### Provider Settings Pattern (Confirmed)
+
+The established Obsidian Copilot pattern for per-provider API keys is a field per provider in the settings interface (`openAIApiKey`, `googleApiKey`, `anthropicApiKey`). This is the right call. The `display()` re-render pattern (already used in settings.ts for the model dropdown) is exactly how to conditionally show per-provider fields.
+
+Concrete shape change needed:
+
+```typescript
+// Current (v1):
+export type LLMProvider = 'openai';
+export interface ActiveRecallSettings {
+    provider: LLMProvider;
+    apiKey: string;
+    model: string;
+    // ...
+}
+
+// V2.0 target:
+export type LLMProvider = 'openai' | 'gemini' | 'claude';
+export interface ActiveRecallSettings {
+    provider: LLMProvider;
+    openAIApiKey: string;
+    geminiApiKey: string;
+    claudeApiKey: string;
+    openAIModel: string;
+    geminiModel: string;
+    claudeModel: string;
+    // ... rest unchanged
+}
+```
+
+Migration note: existing `apiKey` in saved `data.json` must be migrated to `openAIApiKey` on plugin load (one-time migration in `loadSettings`).
+
+### Gemini REST Call (Confirmed)
+
+Direct REST, no SDK. Endpoint pattern:
+
+```
+POST https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent
+Header: x-goog-api-key: {key}
+Body: { "contents": [{ "role": "user", "parts": [{ "text": "..." }] }],
+        "systemInstruction": { "parts": [{ "text": "..." }] } }
+Response: { "candidates": [{ "content": { "parts": [{ "text": "..." }] } }] }
+```
+
+Gemini does NOT use the same `messages` array shape as OpenAI. System message is a top-level `systemInstruction` field, not a message with `role: "system"`. This is a key difference from the existing `buildMessages()` helper.
+
+Curated models to offer: `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-2.5-flash-lite` (HIGH confidence - verified against Google AI for Developers docs March 2026).
+
+### Claude REST Call (Confirmed)
+
+Direct REST, no SDK. Endpoint:
+
+```
+POST https://api.anthropic.com/v1/messages
+Headers: x-api-key: {key}, anthropic-version: 2023-06-01, content-type: application/json
+Body: { "model": "...", "max_tokens": 8096,
+        "system": "...",
+        "messages": [{ "role": "user", "content": "..." }] }
+Response: { "content": [{ "type": "text", "text": "..." }] }
+```
+
+Claude also separates the system message (top-level `system` field, not in `messages` array). `max_tokens` is required, not optional. `anthropic-version` header is required.
+
+Curated models to offer: `claude-sonnet-4-5`, `claude-haiku-4-5`, `claude-opus-4-5` (MEDIUM confidence - verify exact IDs against Anthropic docs at implementation time; model names change frequently).
+
+### Tag Collection API (Confirmed, Medium Confidence on Edge Cases)
+
+```typescript
+// Get all unique tags across vault
+const allTags = new Set<string>();
+for (const file of app.vault.getMarkdownFiles()) {
+    const cache = app.metadataCache.getFileCache(file);
+    const tags = app.metadataCache.getAllTags(cache);
+    tags?.forEach(t => allTags.add(t));
+}
+
+// Get files matching a specific tag
+const matchingFiles = app.vault.getMarkdownFiles().filter(file => {
+    const cache = app.metadataCache.getFileCache(file);
+    return app.metadataCache.getAllTags(cache)?.includes(targetTag) ?? false;
+});
+```
+
+Known issue: there have been past reports of frontmatter tags not always updating the metadata cache immediately. Adding a `await app.metadataCache.resolveLinks()` or relying on the fact that the cache is ready by the time the user opens the picker (not on plugin init) mitigates this.
+
+### Link Collection API (Confirmed)
+
+```typescript
+// Depth-1 outgoing links from a root file
+const destinations = app.metadataCache.resolvedLinks[rootFile.path] ?? {};
+// destinations shape: { "path/to/note.md": 1, "other/note.md": 2 }
+const depth1Paths = Object.keys(destinations);
+
+// Depth-2 (optional)
+const depth2Paths = new Set<string>();
+for (const d1Path of depth1Paths) {
+    const d2Links = app.metadataCache.resolvedLinks[d1Path] ?? {};
+    Object.keys(d2Links).forEach(p => depth2Paths.add(p));
+}
+// Union of depth1 and depth2, excluding root
+```
+
+`resolvedLinks` only contains forward links (outgoing from source). It is a documented, stable API. Getting backlinks requires iterating all files - not needed here.
+
+---
+
+## V1.0 Feature Landscape (Already Shipped - Reference Only)
+
+### Competitor Landscape
+
+| Plugin | Approach | Status | Gap |
+|--------|----------|--------|-----|
+| obsidian-spaced-repetition | Manual flashcard syntax + SM2/FSRS scheduling | Active, widely used | Requires manual card authoring; no AI generation |
+| Quiz Generator (ECuiDev) | AI multi-type quiz from notes/folders, interactive UI | Stale (~500 days), 44/100 score | Abandoned; multiple choice; output lives in plugin UI, not portable |
+| Flashcard Generator (chloedia) | AI Q&A per note, outputs to SR format | Low adoption | Single-note; flashcard format |
+| Spaced Repetition AI (SRAI) | AI flashcard generation + FSRS | Active | Flashcard only; no open-ended questions |
+| Smart Connections | Semantic search + chat over vault | Active, popular | Discovery tool, not recall tool |
+
+**Gap this plugin fills:** No existing plugin generates open-ended, pedagogically ordered recall questions from a folder of notes as portable markdown. None produce a concept map. None output plain `.md` that survives plugin removal.
+
+### V1.0 Anti-Features (Still Relevant)
+
+| Feature | Why Avoid | What to Do Instead |
+|---------|-----------|-------------------|
+| Built-in spaced repetition scheduling | Doubles scope; obsidian-spaced-repetition already does this | YAML frontmatter pre-reserved for SR compatibility |
+| Interactive quiz UI | 3x implementation cost; breaks portability | Collapsible callouts in plain markdown |
+| Auto-regeneration on save | Silent API charges, rate limiting | User-controlled "Generate / Regenerate" button |
+| Recursive folder scanning | Unpredictable scope; silent token blowouts | Non-recursive; document intentionally |
+| Bundled API key / free tier | Violates Obsidian plugin review guidelines | User-provided API key (standard pattern) |
 
 ---
 
 ## Sources
 
-- [obsidian-spaced-repetition GitHub](https://github.com/st3v3nmw/obsidian-spaced-repetition) - Feature list and algorithm details
-- [Quiz Generator GitHub (ECuiDev)](https://github.com/ECuiDev/obsidian-quiz-generator) - Question types, provider support, UI design
-- [Quiz Generator stats (obsidianstats.com)](https://www.obsidianstats.com/plugins/quiz-generator) - Maintenance status, user score
-- [Flashcard Generator GitHub (chloedia)](https://github.com/chloedia/Obsidian_Quiz_Generator) - Output format, limitations
-- [Spaced Repetition AI stats](https://www.obsidianstats.com/plugins/spaced-repetition-ai) - FSRS algorithm, AI generation approach
-- [Best Plugins for Spaced Repetition - obsidianstats.com (2025-05-01)](https://www.obsidianstats.com/posts/2025-05-01-spaced-repetition-plugins) - Ecosystem overview, 26-plugin landscape
-- [Obsidian Forum - Flashcard setup friction](https://forum.obsidian.md/t/flashcards-spaced-repetition-how-to-setup-after-install/105624) - User pain points with SR plugins
-- [Obsidian Callouts - Official Help](https://help.obsidian.md/Editing+and+formatting/Callouts) - Collapsible callout syntax (`+`/`-`)
-- [Obsidian Plugin Guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines) - Store requirements
-- [Smart Connections GitHub](https://github.com/brianpetro/obsidian-smart-connections) - Scope boundaries (discovery, not recall)
+- [Obsidian Copilot LLM Integration - DeepWiki](https://deepwiki.com/logancyang/obsidian-copilot/3-llm-integration) - per-provider field pattern, ProviderSettingsKeyMap architecture
+- [Obsidian MetadataCache resolvedLinks - DeepWiki](https://deepwiki.com/obsidianmd/obsidian-api/2.4-metadatacache-and-link-resolution) - resolvedLinks shape, tag collection pattern
+- [Obsidian Forum - MetadataCache getAllTags efficiency](https://forum.obsidian.md/t/efficiently-get-all-tags-through-the-api/38400) - canonical tag collection approach
+- [Obsidian Forum - resolvedLinks backlinks](https://forum.obsidian.md/t/how-to-get-backlinks-for-a-file/45314) - forward vs backward link distinction
+- [Obsidian Developer Docs - resolvedLinks](https://docs.obsidian.md/Reference/TypeScript+API/MetadataCache/resolvedLinks) - official API reference
+- [Obsidian Developer Docs - Modals / SuggestModal](https://docs.obsidian.md/Plugins/User+interface/Modals) - FuzzySuggestModal pattern
+- [Google AI for Developers - Gemini API models](https://ai.google.dev/gemini-api/docs/models) - curated model IDs (March 2026)
+- [Google AI for Developers - Gemini REST API](https://ai.google.dev/api) - request/response shapes, systemInstruction field
+- [Gemini OpenAI compatibility issue thread](https://discuss.ai.google.dev/t/endpoint-https-generativelanguage-googleapis-com-v1beta-openai-chat-completions-is-not-compliant-with-api-specs/127400) - why to use native Gemini API not the OpenAI compat endpoint
+- [Anthropic TypeScript SDK README](https://github.com/anthropics/anthropic-sdk-typescript/blob/main/README.md) - Messages API shape, required headers
+- [Simon Willison - Anthropic CORS support](https://simonwillison.net/2024/Aug/23/anthropic-dangerous-direct-browser-access/) - direct browser/client HTTP confirmed
+- [Obsidian Plugin Community Review requirements](https://github.com/obsidianmd/obsidian-releases/blob/master/plugin-review.md) - bundle size, dependency, credential policies
+- [Obsidian Forum - dependency limits for community plugin submission](https://forum.obsidian.md/t/question-regarding-dependency-limits-and-bundle-size-for-community-plugin-submission/111972) - no-SDK preference context
 
 ---
 
-*Feature research for: Obsidian Active Recall / Self-Test Plugin*
-*Researched: 2026-03-09*
+*Feature research for: Obsidian Active Recall / Self-Test Plugin (v2.0 milestone)*
+*Researched: 2026-03-21*

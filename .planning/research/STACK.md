@@ -1,7 +1,7 @@
 # Stack Research
 
 **Domain:** Obsidian Community Plugin (TypeScript + LLM integration)
-**Researched:** 2026-03-09
+**Researched:** 2026-03-09 (base stack), 2026-03-21 (v2 additions: multi-provider + collection modes)
 **Confidence:** HIGH (core stack), MEDIUM (tooling patterns), HIGH (requestUrl/OpenAI pattern)
 
 ---
@@ -36,7 +36,18 @@
 
 ---
 
-## OpenAI API via requestUrl()
+## New in v2: No New npm Dependencies
+
+All v2 LLM providers (Gemini, Claude) use the same `requestUrl()` pattern already validated in v1. Zero new npm packages needed. The Obsidian tag/link APIs are part of the existing `obsidian` type package already installed.
+
+**Do not add:**
+- `@google/generative-ai` npm SDK - bundles Node internals, breaks mobile, same reasons as OpenAI SDK
+- `@anthropic-ai/sdk` npm SDK - same problem
+- Any other HTTP client library
+
+---
+
+## OpenAI API via requestUrl() (v1, validated)
 
 This is the most important section. The plugin MUST use `requestUrl()` from the Obsidian API for all HTTP calls - not the OpenAI npm SDK, not `node-fetch`, not native `fetch`.
 
@@ -117,6 +128,338 @@ try {
   throw new Error(`Network error calling OpenAI: ${e.message}`);
 }
 ```
+
+---
+
+## New in v2: Anthropic Claude API via requestUrl()
+
+**Confidence: HIGH - verified from official Anthropic docs (platform.claude.com/docs/en/api/messages) and model list (platform.claude.com/docs/en/about-claude/models/overview), March 2026.**
+
+### Endpoint and Auth
+
+```
+POST https://api.anthropic.com/v1/messages
+```
+
+Authentication uses a dedicated header (not `Authorization: Bearer`):
+
+```
+x-api-key: {apiKey}
+anthropic-version: 2023-06-01
+content-type: application/json
+```
+
+The `anthropic-version` header is required on every request. `2023-06-01` is the current stable value as of March 2026.
+
+### Request Body
+
+The Anthropic API uses a different message structure than OpenAI. The system prompt is a top-level field, not a message in the array. `max_tokens` is required (no default).
+
+```typescript
+const response = await requestUrl({
+  url: 'https://api.anthropic.com/v1/messages',
+  method: 'POST',
+  headers: {
+    'x-api-key': apiKey,
+    'anthropic-version': '2023-06-01',
+    'content-type': 'application/json',
+  },
+  body: JSON.stringify({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 8192,
+    system: systemPrompt,           // top-level, not in messages array
+    messages: [
+      { role: 'user', content: userPrompt },
+    ],
+  }),
+  throw: false,
+});
+```
+
+### Response Structure
+
+```typescript
+// Successful response (status 200)
+const text = response.json.content[0].text;
+
+// Truncation detection - equivalent of OpenAI's finish_reason === 'length'
+if (response.json.stop_reason === 'max_tokens') {
+  new Notice('Warning: response may be truncated due to token limit.');
+}
+```
+
+Full response shape:
+```json
+{
+  "id": "msg_...",
+  "type": "message",
+  "role": "assistant",
+  "content": [{ "type": "text", "text": "..." }],
+  "model": "claude-sonnet-4-6",
+  "stop_reason": "end_turn",
+  "usage": { "input_tokens": 10, "output_tokens": 20 }
+}
+```
+
+`stop_reason` values: `"end_turn"` (normal), `"max_tokens"` (truncated), `"stop_sequence"`.
+
+### Error Response Structure
+
+```json
+{ "type": "error", "error": { "type": "authentication_error", "message": "..." } }
+```
+
+Status codes: 401 = invalid API key, 429 = rate limit, 400 = bad request, 5xx = server error.
+
+### Current Claude Models (March 2026 - HIGH confidence, verified from official docs)
+
+| API Identifier | Alias | Context Window | Best For |
+|---|---|---|---|
+| `claude-opus-4-6` | `claude-opus-4-6` | 1M tokens | Most capable, complex tasks |
+| `claude-sonnet-4-6` | `claude-sonnet-4-6` | 1M tokens | Best balance - recommended default |
+| `claude-haiku-4-5-20251001` | `claude-haiku-4-5` | 200k tokens | Fast, cost-efficient |
+
+**Recommendation:** Default to `claude-sonnet-4-6`. It is the best cost/capability balance and has a 1M context window that far exceeds the plugin's ~122k-char input budget.
+
+**Note:** `claude-3-haiku-20240307` is deprecated and retiring April 19, 2026. Do not include it in the curated model list.
+
+---
+
+## New in v2: Google Gemini API via requestUrl()
+
+**Confidence: HIGH - verified from official Google AI developer docs (ai.google.dev/api/generate-content and ai.google.dev/gemini-api/docs/models), March 2026.**
+
+### Endpoint and Auth
+
+```
+POST https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent
+```
+
+Replace `{model}` with the model identifier, e.g., `gemini-2.5-flash`.
+
+Authentication uses a dedicated header (NOT a query parameter - query params expose the key in logs):
+
+```
+x-goog-api-key: {apiKey}
+Content-Type: application/json
+```
+
+Google docs recommend the `x-goog-api-key` header over the `?key=` query parameter because query params appear in server logs, browser history, and error messages. Use the header.
+
+### Request Body
+
+The Gemini API uses a different structure. The system prompt goes in `system_instruction`, and the user messages go in `contents` as nested `parts` arrays. There is no `role` on the single-turn user content (it defaults to "user").
+
+```typescript
+const response = await requestUrl({
+  url: `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+  method: 'POST',
+  headers: {
+    'x-goog-api-key': apiKey,
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify({
+    system_instruction: {
+      parts: [{ text: systemPrompt }],
+    },
+    contents: [
+      {
+        parts: [{ text: userPrompt }],
+      },
+    ],
+    generationConfig: {
+      maxOutputTokens: 8192,
+    },
+  }),
+  throw: false,
+});
+```
+
+### Response Structure
+
+```typescript
+// Successful response (status 200)
+const text = response.json.candidates[0].content.parts[0].text;
+
+// Truncation detection - Gemini uses finishReason === 'MAX_TOKENS'
+if (response.json.candidates[0].finishReason === 'MAX_TOKENS') {
+  new Notice('Warning: response may be truncated due to token limit.');
+}
+```
+
+Full response shape:
+```json
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [{ "text": "..." }],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "safetyRatings": [...]
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 10,
+    "candidatesTokenCount": 20,
+    "totalTokenCount": 30
+  }
+}
+```
+
+`finishReason` values: `"STOP"` (normal), `"MAX_TOKENS"` (truncated), `"SAFETY"`, `"RECITATION"`, `"OTHER"`.
+
+### Error Response Structure
+
+Gemini errors return a JSON body with `error.code`, `error.message`, and `error.status`:
+
+```json
+{ "error": { "code": 429, "message": "...", "status": "RESOURCE_EXHAUSTED" } }
+```
+
+Status codes: 400 = bad request (`INVALID_ARGUMENT`), 401/403 = invalid API key, 429 = rate limit (`RESOURCE_EXHAUSTED`), 5xx = server error.
+
+Note: Gemini returns 403 (not 401) for invalid API keys in some cases. Check for both.
+
+### Current Gemini Models (March 2026 - HIGH confidence, verified from official docs)
+
+| API Identifier | Best For |
+|---|---|
+| `gemini-2.5-flash` | Best price/performance - recommended default |
+| `gemini-2.5-pro` | Most capable, complex reasoning |
+| `gemini-2.5-flash-lite` | Fastest, cheapest |
+
+**Recommendation:** Default to `gemini-2.5-flash`. It is the official price-performance recommendation and sufficient for self-test generation.
+
+**Curated model list for settings dropdown:** `gemini-2.5-flash`, `gemini-2.5-pro`, `gemini-2.5-flash-lite` plus "Custom model..." option. Do not include Gemini 3 previews - they are not stable production models as of March 2026.
+
+---
+
+## New in v2: Provider Abstraction Pattern
+
+The `callLLM()` function in `generation.ts` is currently OpenAI-specific. The correct v2 pattern is a provider interface, not a monolithic function with conditionals:
+
+```typescript
+// Provider interface - each provider implements this
+interface LLMProvider {
+  call(apiKey: string, model: string, systemPrompt: string, userPrompt: string): Promise<string>;
+}
+
+// generation.ts uses the interface, not a concrete provider
+// Provider is selected at call site based on settings.provider
+```
+
+This allows `classifyError()` to also become provider-specific without a cascade of if-provider checks.
+
+---
+
+## New in v2: Obsidian APIs for Note Collection Modes
+
+**Confidence: HIGH - verified directly from the installed `obsidian` package type definitions at `node_modules/obsidian/obsidian.d.ts`.**
+
+All APIs below are part of the public, stable Obsidian API surface (available in v1.0+). No external packages needed.
+
+### app.vault.getMarkdownFiles()
+
+Returns all markdown files in the vault as a flat array. Use this as the starting point for tag-based and single-note collection.
+
+```typescript
+// Signature (verified from obsidian.d.ts line 6344)
+app.vault.getMarkdownFiles(): TFile[]
+
+// Pattern for tag collection
+const allFiles = app.vault.getMarkdownFiles();
+const tagged = allFiles.filter(file => {
+  const cache = app.metadataCache.getFileCache(file);
+  if (!cache) return false;
+  const tags = getAllTags(cache); // returns string[] | null
+  return tags?.includes('#your-tag') ?? false;
+});
+```
+
+### getAllTags(cache)
+
+Top-level function exported from `obsidian`. Combines frontmatter tags and inline `#tag` occurrences into a single array. This is the correct way to get all tags for a file - do NOT manually parse `cache.tags` and `cache.frontmatter.tags` separately.
+
+```typescript
+// Signature (verified from obsidian.d.ts line 2951)
+// "Combines all tags from frontmatter and note content into a single array."
+import { getAllTags } from 'obsidian';
+getAllTags(cache: CachedMetadata): string[] | null
+
+// Tags are returned WITH the # prefix: ['#topic', '#subtopic']
+// Returns null if no tags found (not empty array)
+```
+
+**Important:** Tag matching must account for the `#` prefix. A user-typed tag `topic` should be matched against `#topic` in the returned array.
+
+### app.metadataCache.getFileCache(file)
+
+Returns the parsed metadata for a single file. This is the correct API - do not use `getCache(path)` unless you only have a path string (getFileCache accepts TFile directly, which is more type-safe).
+
+```typescript
+// Signature (verified from obsidian.d.ts line 4046)
+// "@since 0.9.21"
+app.metadataCache.getFileCache(file: TFile): CachedMetadata | null
+
+// CachedMetadata shape (relevant fields):
+interface CachedMetadata {
+  links?: LinkCache[];          // [[wikilinks]] in note body
+  frontmatterLinks?: FrontmatterLinkCache[];  // links in frontmatter values (since 1.4.0)
+  tags?: TagCache[];            // inline #tags (NOT frontmatter tags - use getAllTags() for both)
+  frontmatter?: FrontMatterCache;  // parsed YAML frontmatter key/values
+}
+```
+
+### app.metadataCache.resolvedLinks
+
+A pre-built index of all resolved wikilinks across the vault. This is the most efficient way to find which files a given note links to - no need to call `getFileCache()` on every file.
+
+```typescript
+// Signature (verified from obsidian.d.ts line 4067)
+// "Contains all resolved links. Maps each source file's path to an object of destination paths with count."
+// Source and destination paths are vault-absolute TFile.path values.
+app.metadataCache.resolvedLinks: Record<string, Record<string, number>>
+
+// Pattern for depth-1 link collection from a root note:
+const rootFile = app.vault.getAbstractFileByPath('Notes/MOC.md');
+if (!(rootFile instanceof TFile)) return;
+
+const linkedPaths = Object.keys(app.metadataCache.resolvedLinks[rootFile.path] ?? {});
+const linkedFiles = linkedPaths
+  .map(p => app.vault.getAbstractFileByPath(p))
+  .filter((f): f is TFile => f instanceof TFile && f.extension === 'md');
+
+// Pattern for depth-2: iterate linkedFiles and do the same lookup for each
+```
+
+### app.metadataCache.getFirstLinkpathDest(linkpath, sourcePath)
+
+Resolves a wikilink string (e.g., `"Note Name"` or `"folder/Note Name"`) to a TFile. Use this when you have a link text and need the actual file - for example, when parsing `cache.links` manually.
+
+```typescript
+// Signature (verified from obsidian.d.ts line 4040)
+// "@since 0.12.5"
+app.metadataCache.getFirstLinkpathDest(linkpath: string, sourcePath: string): TFile | null
+
+// sourcePath is the vault-absolute path of the file containing the link.
+// It's used for disambiguation when multiple notes share the same basename.
+```
+
+**For link-based collection, prefer `resolvedLinks` over manually calling `getFirstLinkpathDest` for each link** - resolvedLinks is pre-computed at startup and updated incrementally; getFirstLinkpathDest does a lookup on each call.
+
+### TagCache Interface
+
+```typescript
+// Verified from obsidian.d.ts line 5736
+// "@since 0.9.7"
+interface TagCache extends CacheItem {
+  tag: string;  // the tag including # prefix, e.g. "#topic"
+}
+```
+
+This is what `cache.tags` contains - but again, use `getAllTags(cache)` rather than accessing `cache.tags` directly, because `getAllTags` also picks up frontmatter tags.
 
 ---
 
@@ -250,11 +593,13 @@ This means esbuild writes `main.js` directly into the vault's plugin folder. Com
 | Recommended | Alternative | When to Use Alternative |
 |-------------|-------------|-------------------------|
 | requestUrl() | OpenAI npm SDK | Never - SDK bundles Node internals that break in Obsidian's renderer and on mobile |
+| requestUrl() | @anthropic-ai/sdk | Never - same reason as OpenAI SDK |
+| requestUrl() | @google/generative-ai | Never - same reason; also the SDK is significantly larger than needed |
 | requestUrl() | native fetch() | Only for streaming SSE (which this plugin doesn't need) - breaks mobile if used broadly |
 | esbuild | Rollup / Vite | If you need advanced code-splitting or non-CJS output - not applicable here |
 | pjeby/hot-reload | Manual Cmd+R in Obsidian | Acceptable but slow; hot-reload is a 5-minute setup that saves hours |
-| obsidian-typings | None (type: any) | If you need undocumented internals and accept the instability risk |
-| typescript-eslint strict-type-checked | eslint:recommended only | For smaller projects where lint speed matters more than strictness |
+| getAllTags(cache) | manual cache.tags + cache.frontmatter.tags parsing | If you specifically need to distinguish inline vs frontmatter tags for some feature |
+| resolvedLinks index | looping getFirstLinkpathDest per link | If resolvedLinks hasn't populated yet (e.g., called before MetadataCache is ready on startup) |
 
 ---
 
@@ -263,34 +608,41 @@ This means esbuild writes `main.js` directly into the vault's plugin folder. Com
 | Avoid | Why | Use Instead |
 |-------|-----|-------------|
 | openai npm SDK | Bundles Node.js streams/http that crash in Obsidian renderer; 500kb bundle weight; breaks mobile entirely | `requestUrl()` with manual JSON payload |
+| @anthropic-ai/sdk | Same as OpenAI SDK - Node-specific internals + bundle weight | `requestUrl()` against `api.anthropic.com/v1/messages` |
+| @google/generative-ai | Same as above; also harder to control request shape | `requestUrl()` against `generativelanguage.googleapis.com` |
 | node-fetch | Node-specific module; not available in Obsidian's renderer process; breaks mobile | `requestUrl()` |
-| native fetch() | Blocked by CORS on desktop; unavailable on mobile via Obsidian; only works if the target API sets permissive CORS headers (OpenAI does not) | `requestUrl()` |
+| native fetch() | Blocked by CORS on desktop; unavailable on mobile via Obsidian | `requestUrl()` |
 | webpack | 5-10x slower than esbuild for watch mode; no advantage for Obsidian plugin builds | esbuild (already in boilerplate) |
-| `"strict": true` in tsconfig | Enables `strictPropertyInitialization` which conflicts with Obsidian plugin class patterns (properties set in `onload()` not constructor) | Individual strict flags as in the official template |
-| obsidian-typings (unless needed) | Reverse-engineered types that can silently become wrong on any Obsidian update; maintainers explicitly warn against production use | Official obsidian API only |
-| Legacy .eslintrc format | Deprecated in ESLint 9; flat config is now the standard | eslint.config.mts (already in boilerplate) |
+| `"strict": true` in tsconfig | Enables `strictPropertyInitialization` which conflicts with Obsidian plugin class patterns | Individual strict flags as in the official template |
+| Gemini `?key=` query param auth | API key appears in server logs, browser history, and error messages | `x-goog-api-key` header |
+| `cache.tags` directly for tag collection | Misses frontmatter tags; must combine with `cache.frontmatter.tags` manually | `getAllTags(cache)` which handles both |
+| legacy .eslintrc format | Deprecated in ESLint 9; flat config is now the standard | `eslint.config.mts` (already in boilerplate) |
 
 ---
 
 ## Stack Patterns by Variant
 
-**If you add streaming in v2 (e.g., show tokens as they appear):**
-- Use native `fetch()` with `stream: true` in the OpenAI request
+**If adding a new LLM provider in v3+:**
+- Implement the `LLMProvider` interface (call/system-prompt/user-prompt -> string)
+- Add a `callXxx()` function following the same `requestUrl()` + `throw: false` pattern
+- Add model constants and error classifiers for the new provider
+- The generation pipeline (`GenerationService`) calls the interface, so zero changes there
+
+**If you add streaming in a future version (e.g., show tokens as they appear):**
+- Use native `fetch()` with `stream: true` in the request
 - Mark the feature as desktop-only (`Platform.isDesktop` check)
 - Gracefully degrade to non-streaming on mobile
-- Do NOT use requestUrl() - it buffers the entire response before resolving
-
-**If you add Anthropic support in v2:**
-- The only change is in the provider implementation class
-- Same `requestUrl()` pattern applies
-- Anthropic endpoint: `https://api.anthropic.com/v1/messages`
-- Different auth header: `x-api-key: {apiKey}` instead of `Authorization: Bearer`
-- Add `anthropic-version: 2023-06-01` header
+- Do NOT use `requestUrl()` - it buffers the entire response before resolving
 
 **If bundle size becomes a concern:**
 - Run `npm run build` and check `main.js` size
 - Use esbuild's `metafile: true` option to inspect what's being bundled
 - Keep production builds under ~500kb - large bundles slow plugin load and may draw scrutiny in community plugin review
+
+**If MetadataCache is not ready at startup (edge case):**
+- Wrap collection calls in `app.workspace.onLayoutReady()` callback
+- The `resolvedLinks` index is populated asynchronously on vault load
+- For on-demand generation (user button press), the cache will always be ready - this only matters for code that runs at plugin load time
 
 ---
 
@@ -318,8 +670,9 @@ npm install -D typescript@^5.8.3 esbuild@0.25.5 tslib@2.4.0 @types/node@^16.11.6
 npm install -D typescript-eslint@8.35.1 eslint-plugin-obsidianmd@0.1.9 @eslint/js@9.30.1
 npm install -D globals@14.0.0 jiti@2.6.1
 
-# Optional: only if accessing undocumented Obsidian internals
-# npm install -D obsidian-typings@5.1.0
+# v2 additions: NONE - no new packages needed
+# Gemini and Claude use requestUrl() just like OpenAI
+# Obsidian tag/link APIs are part of the existing obsidian package
 ```
 
 ---
@@ -328,12 +681,15 @@ npm install -D globals@14.0.0 jiti@2.6.1
 
 - https://github.com/obsidianmd/obsidian-sample-plugin - Official template; package.json and tsconfig verified (HIGH confidence)
 - https://github.com/CtrlAltFocus/obsidian-plugin-auto-tag/blob/main/src/services/openai.api.ts - Real-world requestUrl + OpenAI example (HIGH confidence)
-- https://github.com/Fevol/obsidian-typings - obsidian-typings v5.1.0, maintainer caution re: production use (HIGH confidence)
-- https://github.com/pjeby/hot-reload - Hot-reload plugin; symlink setup pattern (HIGH confidence)
-- https://forum.obsidian.md/t/support-streaming-the-request-and-requesturl-response-body/87381 - Streaming limitation confirmed as of August 2025, no official fix (MEDIUM confidence)
-- https://docs.obsidian.md/Reference/TypeScript+API/requestUrl - Official requestUrl docs (HIGH confidence - content loading issues prevented direct read, but API verified via source code examples)
+- `/node_modules/obsidian/obsidian.d.ts` (installed, version in package.json) - getAllTags signature (line 2951), getFileCache (line 4046), resolvedLinks (line 4067), getFirstLinkpathDest (line 4040), CachedMetadata interface (line 1101), TagCache (line 5736), getMarkdownFiles (line 6344) - all HIGH confidence, read directly
+- https://platform.claude.com/docs/en/api/messages - Anthropic Messages API endpoint, headers, request/response structure (HIGH confidence, fetched March 2026)
+- https://platform.claude.com/docs/en/about-claude/models/overview - Current Claude model identifiers, context windows, pricing (HIGH confidence, fetched March 2026)
+- https://ai.google.dev/api/generate-content - Gemini generateContent endpoint, system_instruction structure, request/response format (HIGH confidence, fetched March 2026)
+- https://ai.google.dev/gemini-api/docs/models - Current stable Gemini model identifiers (HIGH confidence, fetched March 2026)
+- https://ai.google.dev/gemini-api/docs/api-key - x-goog-api-key header vs ?key= query param recommendation (HIGH confidence)
+- https://forum.obsidian.md/t/support-streaming-the-request-and-requesturl-response-body/87381 - Streaming limitation confirmed as of March 2026 (MEDIUM confidence)
 
 ---
 
 *Stack research for: Obsidian Community Plugin (Active Recall / LLM integration)*
-*Researched: 2026-03-09*
+*Researched: 2026-03-09 (base), 2026-03-21 (v2 multi-provider + collection modes)*

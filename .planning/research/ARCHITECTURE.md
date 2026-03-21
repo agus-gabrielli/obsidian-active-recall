@@ -1,332 +1,616 @@
 # Architecture Research
 
-**Domain:** Obsidian Community Plugin (TypeScript)
-**Researched:** 2026-03-09
-**Confidence:** HIGH - based on official Obsidian developer docs, API reference, and verified community plugin patterns
+**Domain:** Obsidian Community Plugin (TypeScript) - v2.0 Integration Architecture
+**Researched:** 2026-03-21
+**Confidence:** HIGH - based on direct codebase inspection, official Obsidian API docs, and verified Gemini/Anthropic API reference
 
-## Standard Architecture
+---
 
-### System Overview
+## Context: What Already Exists
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        OBSIDIAN HOST APP                         │
-│   Workspace  |  Vault (filesystem)  |  MetadataCache  |  Events  │
-└──────────────────────────┬──────────────────────────────────────┘
-                           │ Plugin API (app.*)
-┌──────────────────────────▼──────────────────────────────────────┐
-│                     main.ts — Plugin class                        │
-│  (entry point: onload / onunload — registers everything here)    │
-├──────────────┬────────────────┬──────────────┬───────────────────┤
-│  Commands    │  Context Menu  │  Settings    │  Sidebar View     │
-│ addCommand() │ registerEvent  │  SettingTab  │  registerView()   │
-│              │ ("file-menu")  │  loadData /  │  ItemView leaf    │
-│              │                │  saveData    │                   │
-└──────┬───────┴────────┬───────┴──────┬───────┴──────────┬────────┘
-       │                │              │                  │
-       └────────────────┴──────────────┘                  │
-                        │ triggers                        │ reads
-                        ▼                                 ▼
-┌────────────────────────────────────┐    ┌───────────────────────┐
-│       Generation Pipeline          │    │    Plugin Settings     │
-│  NoteCollector (NoteSource iface)  │    │   (data.json on disk) │
-│       ↓                            │    └───────────────────────┘
-│  ContextBudgetManager              │
-│       ↓                            │
-│  LLMClient (LLMProvider iface)     │
-│       ↓                            │
-│  OutputWriter (vault.create/modify)│
-└────────────────────────────────────┘
-```
+This is a subsequent-milestone document. The v1.0 plugin is fully built and working. The existing files are:
 
-### Component Responsibilities
+| File | What it does |
+|------|-------------|
+| `src/generation.ts` | `GenerationService`, `callLLM` (OpenAI hardcoded), `NoteSource` interface, batching logic, `writeOutput` |
+| `src/settings.ts` | `ActiveRecallSettings`, `DEFAULT_SETTINGS`, `ActiveRecallSettingTab` (provider dropdown currently disabled) |
+| `src/prompts.ts` | `SYSTEM_MESSAGE`, `batchTemplate`, `synthesisTemplate`, `render()`, conditional instruction builders |
+| `src/sidebar.ts` | `ActiveRecallSidebarView`, `getFolderStatuses`, folder-based Generate/Regenerate UI |
+| `src/main.ts` | Plugin entry point, wires commands, context menu, sidebar, status bar |
 
-| Component | Responsibility | Typical Implementation |
-|-----------|----------------|------------------------|
-| `main.ts` / `Plugin` | Entry point; registers all commands, views, events, settings tab; owns settings object | `class ActiveRecallPlugin extends Plugin` |
-| `SidebarView` | Renders the sidebar leaf panel listing folders and Generate/Regenerate buttons | `class SidebarView extends ItemView` |
-| `SettingsTab` | Provides settings UI (provider, API key, model, toggles) and persists via `saveData` | `class ActiveRecallSettingsTab extends PluginSettingTab` |
-| `NoteCollector` | Reads `.md` files from a folder via `app.vault`; hides file-system details from pipeline | Implements `NoteSource` interface |
-| `ContextBudgetManager` | Splits notes into token-budget batches; drives batch+synthesize logic for large folders | Plain TypeScript class |
-| `LLMClient` | Calls LLM provider HTTP API; wraps error handling and retries | Implements `LLMProvider` interface; first concrete: `OpenAIProvider` |
-| `OutputWriter` | Creates or overwrites `_self-test.md` in the target folder via `app.vault` | Plain TypeScript class |
+---
 
-## Recommended Project Structure
+## System Overview (v2.0 Target State)
 
 ```
-src/
-├── main.ts                   # Plugin class — onload/onunload only; thin orchestrator
-├── views/
-│   └── SidebarView.ts        # ItemView for the sidebar leaf panel
-├── settings/
-│   ├── settings.ts           # PluginSettings interface + DEFAULT_SETTINGS constant
-│   └── SettingsTab.ts        # PluginSettingTab subclass
-├── pipeline/
-│   ├── NoteSource.ts         # NoteSource interface (abstraction for collection modes)
-│   ├── NoteCollector.ts      # Concrete: reads top-level .md from a TFolder
-│   ├── ContextBudgetManager.ts  # Batch/synthesize logic
-│   └── OutputWriter.ts       # Writes _self-test.md to vault
-├── llm/
-│   ├── LLMProvider.ts        # LLMProvider interface
-│   └── OpenAIProvider.ts     # First concrete provider
-└── constants.ts              # VIEW_TYPE string, SELF_TEST_FILENAME, token budget consts
+┌───────────────────────────────────────────────────────────────────────┐
+│                          OBSIDIAN HOST APP                             │
+│   Workspace  |  Vault (filesystem)  |  MetadataCache  |  Events        │
+└───────────────────────────┬───────────────────────────────────────────┘
+                            │ Plugin API (app.*)
+┌───────────────────────────▼───────────────────────────────────────────┐
+│                      main.ts (unchanged in v2)                         │
+│   addCommand | registerView | registerEvent | addRibbonIcon            │
+└───────┬───────────────┬────────────────────────────┬──────────────────┘
+        │               │                            │
+        ▼               ▼                            ▼
+┌───────────┐  ┌─────────────────┐       ┌──────────────────────────────┐
+│ settings  │  │   sidebar.ts    │       │      generation.ts            │
+│ (MODIFIED)│  │   (MODIFIED)    │       │      (MODIFIED)               │
+│           │  │                 │       │                               │
+│ providers │  │ FolderMode      │       │ NoteSource interface          │
+│  per-key  │  │ TagMode     ─ ─ ┤ calls │   (already abstracted)        │
+│  per-model│  │ LinkMode        │──────>│                               │
+│           │  │ SingleNoteMode  │       │ callLLM()                     │
+└───────────┘  └─────────────────┘       │ (REPLACED with provider       │
+                                         │  dispatch)                    │
+                                         │                               │
+                                         │ NEW: GeminiProvider           │
+                                         │ NEW: AnthropicProvider        │
+                                         │ RENAMED: OpenAIProvider       │
+                                         └──────────────────────────────┘
+
+NEW COLLECTORS (implement NoteSource via collection function):
+  collectByTag(app, tag) → NoteSource[]
+  collectByLinks(app, rootFile, depth) → NoteSource[]
+  collectSingleNote(app, file) → NoteSource[]
+  collectNoteFiles() → existing folder collector (unchanged)
 ```
 
-### Structure Rationale
+---
 
-- **`views/`:** Keeps UI rendering isolated from business logic; view can be replaced without touching pipeline.
-- **`settings/`:** Interface + defaults in one file; tab in another. Settings are a pure data object owned by the Plugin instance and passed by reference wherever needed.
-- **`pipeline/`:** The generation flow is a linear pipeline. Each step is a separate class with a single responsibility. `NoteSource` interface is the extension point for v2 collection modes.
-- **`llm/`:** Provider abstraction lives here. Adding Anthropic means adding `AnthropicProvider.ts` and a settings toggle - nothing else changes.
-- **`constants.ts`:** Centralizes the `VIEW_TYPE` string (used in both `main.ts` and `SidebarView.ts`) and other shared literals to prevent typo-driven bugs.
+## Component Responsibilities
 
-## Architectural Patterns
+| Component | v2 Status | Responsibility Change |
+|-----------|-----------|----------------------|
+| `main.ts` | Unchanged | No changes needed - sidebar and generation handle new modes |
+| `settings.ts` | Modified | Add `gemini`/`anthropic` to `LLMProvider` type; add per-provider key + model fields; enable provider dropdown |
+| `sidebar.ts` | Modified | Add collection mode selector (folder/tag/link/single); drive appropriate collector |
+| `generation.ts` | Modified | Replace `callLLM()` with provider dispatch; extract `OpenAIProvider`; add `GeminiProvider` + `AnthropicProvider`; add new collector functions |
+| `prompts.ts` | Unchanged | No changes needed - templates are provider-agnostic |
 
-### Pattern 1: Plugin Class as Thin Orchestrator
+---
 
-**What:** `main.ts` / the `Plugin` subclass contains only registration calls in `onload()` - no business logic. Commands call into pipeline classes; the plugin itself does not compute anything.
+## Part 1: Multi-Provider Integration
 
-**When to use:** Always. This is the standard Obsidian plugin pattern.
+### 1a. Settings Changes (settings.ts)
 
-**Trade-offs:** Keeps `main.ts` readable and testable at a glance. Business logic is testable in isolation without mocking the full Obsidian API.
+**What to change:**
 
-**Example:**
 ```typescript
-async onload() {
-  await this.loadSettings();
-  this.addSettingTab(new ActiveRecallSettingsTab(this.app, this));
-  this.registerView(SIDEBAR_VIEW_TYPE, (leaf) => new SidebarView(leaf, this));
-  this.addCommand({ id: "generate-self-test", name: "Generate Self-Test for Current Folder",
-    callback: () => this.runGeneration(this.getCurrentFolder()) });
-  this.registerEvent(
-    this.app.workspace.on("file-menu", (menu, file) => {
-      if (file instanceof TFolder) {
-        menu.addItem((item) => item.setTitle("Generate Self-Test")
-          .setIcon("brain").onClick(() => this.runGeneration(file)));
-      }
-    })
-  );
+// BEFORE
+export type LLMProvider = 'openai';
+
+export interface ActiveRecallSettings {
+    provider: LLMProvider;
+    apiKey: string;
+    model: string;
+    // ...
 }
 ```
 
-### Pattern 2: Never Store View References - Use getLeavesOfType
-
-**What:** Obsidian may call the view factory multiple times (after layout restores, workspace splits, etc.). Never keep `private view: SidebarView` on the plugin. Always retrieve via `getLeavesOfType()`.
-
-**When to use:** Any time you need to update the view from outside (e.g., after generation completes, refresh the folder list).
-
-**Trade-offs:** Slightly more verbose than a stored reference, but avoids stale-pointer bugs and double-render issues.
-
-**Example:**
 ```typescript
-// To trigger a view refresh after generation:
-this.app.workspace.getLeavesOfType(SIDEBAR_VIEW_TYPE).forEach((leaf) => {
-  if (leaf.view instanceof SidebarView) {
-    leaf.view.refresh();
-  }
-});
+// AFTER
+export type LLMProvider = 'openai' | 'gemini' | 'anthropic';
 
-// In onunload():
-this.app.workspace.detachLeavesOfType(SIDEBAR_VIEW_TYPE);
-```
-
-### Pattern 3: Settings Object Passed by Reference
-
-**What:** The `Plugin` instance owns one `settings: PluginSettings` object. It is passed into `SettingsTab`, `SidebarView`, and pipeline classes at construction time. No global singleton, no pub/sub for settings.
-
-**When to use:** This is the standard Obsidian plugin idiom. Works because settings changes always go through `saveSettings()` on the plugin which writes the same object back to disk.
-
-**Trade-offs:** Simple. The one gotcha is that the view or pipeline holds a stale snapshot if settings change mid-operation - in practice not an issue since LLM calls are user-initiated.
-
-**Example:**
-```typescript
-// In SettingsTab onChange handler:
-this.plugin.settings.apiKey = value;
-await this.plugin.saveSettings();
-```
-
-### Pattern 4: LLMProvider Interface for Provider Abstraction
-
-**What:** Define a minimal `LLMProvider` interface and inject a concrete implementation at construction time. The pipeline only calls the interface.
-
-**When to use:** Required here because the PROJECT.md explicitly calls for provider abstraction.
-
-**Trade-offs:** Tiny overhead for a single v1 provider, but the abstraction pays off immediately when Anthropic is wired in v2. Don't over-engineer the interface - a single `complete(prompt: string, options: CompletionOptions): Promise<string>` method covers the use case.
-
-**Example:**
-```typescript
-interface LLMProvider {
-  complete(prompt: string, options: CompletionOptions): Promise<string>;
+// Per-provider config block
+export interface ProviderConfig {
+    apiKey: string;
+    model: string;
 }
 
-class OpenAIProvider implements LLMProvider {
-  constructor(private apiKey: string, private model: string) {}
-  async complete(prompt: string, options: CompletionOptions): Promise<string> {
-    // fetch('/v1/chat/completions', ...)
-  }
+export interface ActiveRecallSettings {
+    provider: LLMProvider;
+    openai: ProviderConfig;
+    gemini: ProviderConfig;
+    anthropic: ProviderConfig;
+    language: string;
+    generateHints: boolean;
+    generateReferenceAnswers: boolean;
+    generateConceptMap: boolean;
+    customInstructions: string;
+}
+
+export const DEFAULT_SETTINGS: ActiveRecallSettings = {
+    provider: 'openai',
+    openai: { apiKey: '', model: 'gpt-4.1-mini' },
+    gemini: { apiKey: '', model: 'gemini-2.5-flash' },
+    anthropic: { apiKey: '', model: 'claude-sonnet-4-6' },
+    // ...
+};
+```
+
+**Migration:** `loadSettings()` in main.ts already uses `Object.assign({}, DEFAULT_SETTINGS, ...)` so existing `data.json` with flat `apiKey`/`model` fields will be ignored (not merged into nested structure). The nested structure starts fresh. This is acceptable - users re-enter their key once. If migration is desired, add a one-time migration check in `loadSettings()`.
+
+**Settings UI:** The provider dropdown (currently disabled with `setDisabled(true)`) becomes active. Switching provider shows the relevant API key input and model dropdown for that provider. Other providers' keys are hidden but persist in settings.
+
+### 1b. Provider Dispatch in generation.ts
+
+**What to change:**
+
+The existing `callLLM(apiKey, model, messages)` is OpenAI-specific. Replace with a provider dispatch function that routes to the right implementation.
+
+```typescript
+// NEW structure in generation.ts
+
+export interface LLMMessages {
+    system: string;
+    user: string;
+}
+
+// Entry point - dispatches based on provider setting
+export async function callLLM(
+    settings: ActiveRecallSettings,
+    messages: LLMMessages
+): Promise<string> {
+    const cfg = settings[settings.provider]; // openai | gemini | anthropic config block
+    switch (settings.provider) {
+        case 'openai':     return callOpenAI(cfg.apiKey, cfg.model, messages);
+        case 'gemini':     return callGemini(cfg.apiKey, cfg.model, messages);
+        case 'anthropic':  return callAnthropic(cfg.apiKey, cfg.model, messages);
+    }
 }
 ```
+
+**Note:** `callLLM` signature changes. All internal callers in `GenerationService.generate()` pass `this.settings` and the message pair. The existing `buildMessages()` helper (returns `Array<{role, content}>`) can be retired or adapted - Gemini and Anthropic have different message schemas.
+
+**Impact on GenerationService:** Update three `callLLM(this.settings.apiKey, this.settings.model, messages)` callsites to `callLLM(this.settings, { system: SYSTEM_MESSAGE, user: userMessage })`.
+
+### 1c. OpenAI Provider (generation.ts - minimal change)
+
+Rename / extract the existing `callLLM` body into `callOpenAI`. The OpenAI format already works. The only structural change is accepting `LLMMessages` instead of the pre-built messages array:
+
+```typescript
+async function callOpenAI(apiKey: string, model: string, msgs: LLMMessages): Promise<string> {
+    const messages = [
+        { role: 'system', content: msgs.system },
+        { role: 'user', content: msgs.user },
+    ];
+    // ... existing requestUrl() call unchanged ...
+}
+```
+
+### 1d. Gemini Provider
+
+**API:** `POST https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent`
+**Auth:** `x-goog-api-key` header
+**Request body:**
+```json
+{
+  "systemInstruction": { "parts": [{ "text": "..." }] },
+  "contents": [{ "role": "user", "parts": [{ "text": "..." }] }]
+}
+```
+**Response:** `response.json.candidates[0].content.parts[0].text`
+**Finish check:** `candidates[0].finishReason === 'MAX_TOKENS'` (vs OpenAI's `finish_reason === 'length'`)
+
+```typescript
+async function callGemini(apiKey: string, model: string, msgs: LLMMessages): Promise<string> {
+    const response = await requestUrl({
+        url: `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
+        method: 'POST',
+        headers: {
+            'x-goog-api-key': apiKey,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            systemInstruction: { parts: [{ text: msgs.system }] },
+            contents: [{ role: 'user', parts: [{ text: msgs.user }] }],
+        }),
+        throw: false,
+    });
+
+    if (response.status !== 200) {
+        throw new LLMError(response.status, response.json);
+    }
+
+    const text = response.json?.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!text) throw new Error('Empty response from Gemini');
+
+    if (response.json?.candidates?.[0]?.finishReason === 'MAX_TOKENS') {
+        new Notice('Warning: response may be truncated due to token limit.');
+    }
+
+    return text;
+}
+```
+
+### 1e. Anthropic Provider
+
+**API:** `POST https://api.anthropic.com/v1/messages`
+**Auth:** `x-api-key` header + `anthropic-version: 2023-06-01` header
+**Request body:** requires `max_tokens` (use 8192 as a reasonable cap matching model limits)
+**Response:** `response.json.content[0].text`
+**Finish check:** `stop_reason === 'max_tokens'`
+
+```typescript
+async function callAnthropic(apiKey: string, model: string, msgs: LLMMessages): Promise<string> {
+    const response = await requestUrl({
+        url: 'https://api.anthropic.com/v1/messages',
+        method: 'POST',
+        headers: {
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            model,
+            max_tokens: 8192,
+            system: msgs.system,
+            messages: [{ role: 'user', content: msgs.user }],
+        }),
+        throw: false,
+    });
+
+    if (response.status !== 200) {
+        throw new LLMError(response.status, response.json);
+    }
+
+    const text = response.json?.content?.find((b: { type: string }) => b.type === 'text')?.text;
+    if (!text) throw new Error('Empty response from Anthropic');
+
+    if (response.json?.stop_reason === 'max_tokens') {
+        new Notice('Warning: response may be truncated due to token limit.');
+    }
+
+    return text;
+}
+```
+
+### 1f. Error Classification
+
+`classifyError()` currently has an OpenAI-specific 500 message. Extend it to handle provider-agnostic status codes (401, 429, 400, 5xx) without mentioning OpenAI by name. The existing `LLMError` class is unchanged.
+
+---
+
+## Part 2: Flexible Collection Modes
+
+### 2a. NoteSource Interface (unchanged - already correct)
+
+The existing interface in `generation.ts` is exactly right:
+
+```typescript
+export interface NoteSource {
+    name: string;    // basename without extension
+    content: string; // full text content
+}
+```
+
+All new collection modes produce `NoteSource[]`. The generation pipeline consumes `NoteSource[]` regardless of how it was collected. No interface changes needed.
+
+### 2b. New Collector Functions (generation.ts additions)
+
+Add three new collection functions alongside the existing `collectNoteFiles()`:
+
+**Tag Collector:**
+```typescript
+export async function collectByTag(app: App, tag: string): Promise<NoteSource[]> {
+    // Normalize tag - ensure leading # for comparison
+    const normalizedTag = tag.startsWith('#') ? tag : `#${tag}`;
+    const allFiles = app.vault.getMarkdownFiles();
+    const matched: NoteSource[] = [];
+    for (const file of allFiles) {
+        const cache = app.metadataCache.getFileCache(file);
+        const fileTags = cache?.tags?.map(t => t.tag) ?? [];
+        // Also check frontmatter tags array
+        const fmTags: string[] = (cache?.frontmatter?.tags ?? []).map((t: string) =>
+            t.startsWith('#') ? t : `#${t}`
+        );
+        if ([...fileTags, ...fmTags].includes(normalizedTag)) {
+            const content = await app.vault.read(file);
+            matched.push({ name: file.basename, content });
+        }
+    }
+    return matched;
+}
+```
+
+**Linked Notes Collector:**
+```typescript
+export async function collectByLinks(
+    app: App,
+    rootFile: TFile,
+    depth: 1 | 2 = 1
+): Promise<NoteSource[]> {
+    // BFS over outgoing links
+    const collected = new Map<string, NoteSource>();
+    const queue: Array<{ file: TFile; level: number }> = [{ file: rootFile, level: 0 }];
+    const visited = new Set<string>([rootFile.path]);
+
+    while (queue.length > 0) {
+        const { file, level } = queue.shift()!;
+        if (file.basename !== '_self-test') {
+            const content = await app.vault.read(file);
+            collected.set(file.path, { name: file.basename, content });
+        }
+        if (level < depth) {
+            const cache = app.metadataCache.getFileCache(file);
+            for (const link of (cache?.links ?? [])) {
+                const resolved = app.metadataCache.getFirstLinkpathDest(link.link, file.path);
+                if (resolved instanceof TFile && !visited.has(resolved.path)) {
+                    visited.add(resolved.path);
+                    queue.push({ file: resolved, level: level + 1 });
+                }
+            }
+        }
+    }
+    return Array.from(collected.values());
+}
+```
+
+**Single Note Collector:**
+```typescript
+export async function collectSingleNote(app: App, file: TFile): Promise<NoteSource[]> {
+    const content = await app.vault.read(file);
+    return [{ name: file.basename, content }];
+}
+```
+
+### 2c. Output Path Logic
+
+Folder mode writes to `folderPath/_self-test.md` (existing `writeOutput()`). Tag/link/single modes need a different output location. The output should go to a `_self-tests/` folder in the vault root (or user-configurable), with a filename derived from the tag or root note name.
+
+Extend `writeOutput()` or add a new `writeOutputToPath(app, vaultRelPath, content)` that accepts a full relative path:
+
+```typescript
+export async function writeOutputToPath(app: App, vaultRelPath: string, content: string): Promise<void> {
+    // Ensure parent folder exists
+    const parts = vaultRelPath.split('/');
+    parts.pop(); // remove filename
+    const parentPath = parts.join('/');
+    if (parentPath && !app.vault.getAbstractFileByPath(parentPath)) {
+        await app.vault.createFolder(parentPath);
+    }
+    const existing = app.vault.getAbstractFileByPath(vaultRelPath);
+    if (existing instanceof TFile) {
+        await app.vault.modify(existing, content);
+    } else {
+        await app.vault.create(vaultRelPath, content);
+    }
+}
+```
+
+Tag mode output: `_self-tests/<tag-name>_self-test.md`
+Link mode output: `_self-tests/<rootNote-name>_self-test.md`
+Single note output: Same folder as the note, `<note-name>_self-test.md`
+
+### 2d. GenerationService - Collection Mode Dispatch
+
+The existing `generate(folderPath: string)` is the only entry point on `GenerationService`. Add overloaded or additional public methods to handle the new modes while keeping `generate()` unchanged for backward compatibility:
+
+```typescript
+export class GenerationService {
+    // EXISTING - unchanged
+    async generate(folderPath: string): Promise<void> { ... }
+
+    // NEW - tag mode
+    async generateForTag(tag: string): Promise<void> {
+        const notes = await collectByTag(this.app, tag);
+        await this.runPipeline(notes, `_self-tests/${tag.replace('#','')}_self-test.md`, tag);
+    }
+
+    // NEW - linked notes mode
+    async generateForLinks(rootFile: TFile, depth: 1 | 2 = 1): Promise<void> {
+        const notes = await collectByLinks(this.app, rootFile, depth);
+        await this.runPipeline(notes, `_self-tests/${rootFile.basename}_self-test.md`, rootFile.basename);
+    }
+
+    // NEW - single note mode
+    async generateForNote(file: TFile): Promise<void> {
+        const notes = await collectSingleNote(this.app, file);
+        const outputPath = `${file.parent?.path ?? ''}/${file.basename}_self-test.md`;
+        await this.runPipeline(notes, outputPath, file.basename);
+    }
+
+    // EXTRACTED - shared pipeline (batch/synthesize/write)
+    private async runPipeline(notes: NoteSource[], outputPath: string, label: string): Promise<void> {
+        // Same logic as existing generate() body, but uses writeOutputToPath
+    }
+}
+```
+
+The existing `generate()` body becomes a call to `collectNoteFiles()` + `runPipeline()`.
+
+### 2e. Sidebar UI Changes (sidebar.ts)
+
+The sidebar currently shows folders only. For v2, it needs a mode selector and mode-specific UI.
+
+**Approach:** Add a `collectionMode` state to the sidebar view. Render a tab row or segmented control at the top. Each mode renders a different list or input below.
+
+```
+┌────────────────────────────────┐
+│ Active Recall                  │
+│ [Folder] [Tag] [Links] [Note]  │  <- mode tabs
+├────────────────────────────────┤
+│ (mode-specific content area)   │
+│                                │
+│ Folder mode: existing list     │
+│ Tag mode: tag input + Generate │
+│ Link mode: note picker + depth │
+│ Note mode: current note button │
+└────────────────────────────────┘
+```
+
+The `renderPanel()` method splits into `renderFolderPanel()`, `renderTagPanel()`, `renderLinkPanel()`, `renderNotePanel()`. The mode is stored as an instance variable and persists until the view is closed.
+
+The `generateForFolder()` method remains. Add `generateForTag()`, `generateForLinks()`, `generateForNote()` that delegate to `GenerationService` equivalents.
+
+---
 
 ## Data Flow
 
-### Generation Request Flow (Command or Context Menu)
+### Folder Mode (unchanged)
 
 ```
-User action (command / context menu / sidebar button)
-    │
-    ▼
-Plugin.runGeneration(folder: TFolder)
-    │
-    ▼
-NoteCollector.collect(folder)   ← app.vault.read(tfile) per .md file
-    │ returns: Note[]
-    ▼
-ContextBudgetManager.plan(notes, tokenBudget)
-    │ returns: Batch[] (single batch if fits, multi-batch if oversized)
-    ▼
-LLMClient.generate(batch, settings)   ← HTTP POST to provider
-    │  (if multi-batch: call per batch, then synthesize call)
-    │ returns: string (markdown content)
-    ▼
-OutputWriter.write(folder, content)   ← app.vault.create or vault.modify
-    │
-    ▼
-SidebarView.refresh()   ← getLeavesOfType pattern
+Sidebar button / command / context menu
+    -> GenerationService.generate(folderPath)
+    -> collectNoteFiles(app, folderPath) -> TFile[]
+    -> readNotes(app, files) -> NoteSource[]
+    -> splitIntoBatches(notes) -> NoteSource[][]
+    -> callLLM(settings, messages) [dispatches to provider]
+    -> writeOutput(app, folderPath, content)
+    -> sidebar.refresh()
 ```
 
-### Settings Flow
+### Tag Mode (new)
 
 ```
-User opens Settings → SettingsTab.display() renders current plugin.settings
-    │
-    ▼
-User changes a field → onChange callback → plugin.settings[key] = value
-    │
-    ▼
-plugin.saveSettings() → this.saveData(this.settings) → data.json on disk
+Sidebar tag input + Generate button
+    -> GenerationService.generateForTag(tag)
+    -> collectByTag(app, tag) -> NoteSource[]
+    -> splitIntoBatches(notes) -> NoteSource[][]
+    -> callLLM(settings, messages)
+    -> writeOutputToPath(app, '_self-tests/{tag}_self-test.md', content)
 ```
 
-### Sidebar View State
+### Linked Notes Mode (new)
 
 ```
-SidebarView.onOpen()
-    │
-    ├── app.vault.getAllFolders()        ← enumerate folders
-    ├── check each folder for _self-test.md  ← app.vault.getAbstractFileByPath()
-    └── render list with Generate / Regenerate buttons
-         │
-         └── button click → Plugin.runGeneration(folder)
+Sidebar root note picker + depth selector + Generate button
+    -> GenerationService.generateForLinks(rootFile, depth)
+    -> collectByLinks(app, rootFile, depth) -> NoteSource[]
+    -> splitIntoBatches(notes)
+    -> callLLM(settings, messages)
+    -> writeOutputToPath(app, '_self-tests/{rootNote}_self-test.md', content)
 ```
 
-### Key Data Flows
+### Single Note Mode (new)
 
-1. **Vault reads (note collection):** `app.vault.read(tfile)` - use `read()` not `cachedRead()` because content is being sent to LLM for transformation (authoritative copy required).
-2. **Vault writes (output):** `app.vault.create(path, content)` for first generation; `app.vault.modify(tfile, content)` for regeneration (overwrite).
-3. **Settings persistence:** `plugin.loadData()` / `plugin.saveData()` read/write `data.json` inside the plugin folder (`.obsidian/plugins/<plugin-id>/data.json`). Never access this file directly.
-4. **Event propagation:** Context menu items and workspace events are registered via `this.registerEvent()` so they auto-detach on plugin unload - no manual cleanup needed.
+```
+Sidebar "Generate for current note" button OR command palette
+    -> GenerationService.generateForNote(activeFile)
+    -> collectSingleNote(app, file) -> NoteSource[]
+    -> callLLM(settings, messages) (single batch, no synthesis needed)
+    -> writeOutputToPath(app, '{folder}/{note}_self-test.md', content)
+```
 
-## Build Order
+### Provider Dispatch (new - inside callLLM)
 
-This is the recommended sequence. Each step unblocks the next.
+```
+callLLM(settings, { system, user })
+    -> switch(settings.provider)
+        'openai'     -> callOpenAI(cfg.apiKey, cfg.model, msgs)   -> requestUrl to api.openai.com
+        'gemini'     -> callGemini(cfg.apiKey, cfg.model, msgs)   -> requestUrl to generativelanguage.googleapis.com
+        'anthropic'  -> callAnthropic(cfg.apiKey, cfg.model, msgs) -> requestUrl to api.anthropic.com
+```
 
-| Step | What to Build | Why First |
-|------|--------------|-----------|
-| 1 | Scaffold: `manifest.json`, `package.json`, `tsconfig.json`, esbuild config, `main.ts` with empty `onload/onunload` | Nothing compiles or loads without this; validate hot-reload works before writing any logic |
-| 2 | Settings: `PluginSettings` interface, `DEFAULT_SETTINGS`, `SettingsTab`, `loadSettings`/`saveSettings` | Every subsequent component reads from settings; must exist before LLM client or view is wired |
-| 3 | LLM layer: `LLMProvider` interface + `OpenAIProvider` | Can be developed and tested in isolation with a hardcoded prompt; validates API key + model config works |
-| 4 | Note collection: `NoteSource` interface + `NoteCollector` | Depends on settings (none directly) but needed before pipeline can run end-to-end |
-| 5 | Context budget + pipeline orchestration: `ContextBudgetManager`, `OutputWriter`, `Plugin.runGeneration()` | Wires steps 3+4 together; first point where full generation can be tested via command |
-| 6 | Command registration + context menu | Trivial to add once `runGeneration()` exists; quick validation of the end-to-end flow |
-| 7 | Sidebar `ItemView` | Can be built independently after step 5; depends on `runGeneration()` existing to wire buttons |
-| 8 | Polish: error handling, loading state in sidebar, mobile keyboard quirks for settings | Last because it wraps all other components |
+---
 
-## Anti-Patterns
+## Suggested Build Order
 
-### Anti-Pattern 1: Storing a Direct View Reference on the Plugin
+The order is driven by three dependency chains that must be resolved before the UI or pipelines can work:
 
-**What people do:** `private sidebarView: SidebarView` on the plugin, assigned in the `registerView` factory.
+| Step | What to Build | Why This Order |
+|------|--------------|----------------|
+| 1 | **Settings schema migration** - update `ActiveRecallSettings` to per-provider config; update `DEFAULT_SETTINGS`; update settings UI to activate provider dropdown and show per-provider key/model | Everything else reads provider config from settings; do this first so callers have the right shape |
+| 2 | **Provider dispatch in generation.ts** - change `callLLM` signature; extract `callOpenAI`; wire the switch statement | Unblocks Gemini and Anthropic without breaking existing tests; existing tests mock `callLLM` so update mocks here |
+| 3 | **Gemini provider** - implement `callGemini`; add curated Gemini model list to settings UI; test with real API key | Independent from Anthropic; can validate end-to-end with one new provider before adding second |
+| 4 | **Anthropic provider** - implement `callAnthropic`; add curated Claude model list; test | Follows same pattern as Gemini; straightforward once step 3 is verified |
+| 5 | **Tag collector** - implement `collectByTag`; wire `generateForTag` on `GenerationService` | New collector, no dependencies on provider work; can be built in parallel with step 3-4 but must come before sidebar |
+| 6 | **Link collector** - implement `collectByLinks`; wire `generateForLinks` | Depends on `MetadataCache` patterns; independent from tag collector |
+| 7 | **Single note collector** - implement `collectSingleNote`; wire `generateForNote` | Trivial; do it alongside step 6 |
+| 8 | **writeOutputToPath** - add output path helper; integrate into new `GenerationService` methods | Needed before any of the new modes can write output |
+| 9 | **Sidebar UI** - add mode tabs; render mode-specific panels; wire to new `GenerationService` methods | Must come last; depends on all new `GenerationService` entry points existing |
+| 10 | **Error message updates** - extend `classifyError` for Gemini/Anthropic error shapes; update provider-specific error text | Polish; done after all providers work |
 
-**Why it's wrong:** Obsidian can call the factory multiple times when tabs are restored or the workspace is restructured. The stored reference becomes stale. Updating it calls methods on a detached view.
+**Parallel opportunities:**
+- Steps 3 and 5 are independent (provider work vs. collector work) - can be done in either order or in parallel if working in separate branches.
+- Steps 6 and 7 are independent of each other.
+- Step 8 can be done before step 9 alongside any of steps 5-7.
 
-**Do this instead:** Always use `getLeavesOfType(SIDEBAR_VIEW_TYPE)` to get the live instance when you need to call a method on it.
-
-### Anti-Pattern 2: Accessing `containerEl.children[1]` in ItemView
-
-**What people do:** Older tutorials and Stack Overflow answers use `this.containerEl.children[1]` to get the content area in `onOpen()`.
-
-**Why it's wrong:** Obsidian's internal DOM structure is not stable across versions. This access pattern breaks silently.
-
-**Do this instead:** Use `this.contentEl` which is the stable, API-documented content container for `ItemView`.
-
-### Anti-Pattern 3: Calling `vault.read` on Every File at Plugin Load
-
-**What people do:** Eagerly read all markdown files in `onload()` to build a cache.
-
-**Why it's wrong:** Expensive on large vaults; blocks Obsidian startup; not needed since reads only happen at generation time.
-
-**Do this instead:** Read files lazily inside `NoteCollector.collect()` at the moment the user triggers generation.
-
-### Anti-Pattern 4: Hardcoding the Provider in the Pipeline
-
-**What people do:** `fetch('https://api.openai.com/v1/chat/completions', ...)` directly inside the generation orchestration code.
-
-**Why it's wrong:** Binds the pipeline to a single provider; any refactor to add Anthropic touches multiple files.
-
-**Do this instead:** The pipeline calls `this.llmProvider.complete(prompt, opts)`. The concrete `OpenAIProvider` handles the HTTP call. Switching providers means swapping the injected implementation.
-
-### Anti-Pattern 5: Async onload() Without Awaiting loadSettings()
-
-**What people do:** Fire-and-forget settings load, register commands synchronously before settings are available.
-
-**Why it's wrong:** Commands that reference `this.settings` may run before settings are loaded from disk, causing null/undefined reads.
-
-**Do this instead:** `async onload() { await this.loadSettings(); /* then register everything else */ }` - the `Plugin.onload()` override can be async; Obsidian awaits it.
+---
 
 ## Integration Points
 
-### External Services
+### Modified Files
 
-| Service | Integration Pattern | Notes |
-|---------|---------------------|-------|
-| OpenAI API | `fetch` from within `OpenAIProvider`; user-supplied API key from settings; model from settings | Use `requestUrl` from `obsidian` package on mobile for CORS compliance; do not use raw `fetch` |
-| Anthropic (v2) | Same interface, new concrete class | No code changes outside `llm/` folder |
+| File | What Changes | What Stays the Same |
+|------|-------------|---------------------|
+| `settings.ts` | `LLMProvider` type, `ActiveRecallSettings` shape (nested provider configs), settings UI (active provider dropdown, per-provider key/model) | Output toggles, language, custom instructions, all non-provider settings |
+| `generation.ts` | `callLLM` signature and implementation (provider dispatch), new collectors, `runPipeline` extraction, `writeOutputToPath` addition, new `GenerationService` public methods | `NoteSource` interface, `splitIntoBatches`, `buildBatchPrompt`, `buildSynthesisPrompt`, `buildMessages`, `LLMError`, `writeOutput`, `estimateTokens` |
+| `sidebar.ts` | `renderPanel()` split into mode panels, mode state variable, new `generate*` delegating methods | `getFolderStatuses`, `getLastGeneratedDate`, `buildActivateView`, `buildContextMenuHandler`, `generatingFolders` Set pattern |
+
+### Unchanged Files
+
+| File | Reason |
+|------|--------|
+| `main.ts` | All wiring already in place; new modes are triggered from sidebar, not new commands |
+| `prompts.ts` | Templates are provider-agnostic; system message and batch/synthesis templates work for all three providers |
+
+### External API Integration
+
+| Provider | Endpoint | Auth Header | Body Shape | Text Extraction |
+|----------|----------|-------------|------------|-----------------|
+| OpenAI | `https://api.openai.com/v1/chat/completions` | `Authorization: Bearer {key}` | `{ model, messages: [{role, content}] }` | `json.choices[0].message.content` |
+| Gemini | `https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent` | `x-goog-api-key: {key}` | `{ systemInstruction: {parts}, contents: [{role, parts}] }` | `json.candidates[0].content.parts[0].text` |
+| Anthropic | `https://api.anthropic.com/v1/messages` | `x-api-key: {key}` + `anthropic-version: 2023-06-01` | `{ model, max_tokens, system, messages: [{role, content}] }` | `json.content.find(b => b.type==='text').text` |
+
+All three use `requestUrl` from the Obsidian API (not native `fetch`) for CORS compliance on desktop and mobile.
 
 ### Internal Boundaries
 
-| Boundary | Communication | Notes |
-|----------|---------------|-------|
-| `main.ts` → `SidebarView` | `getLeavesOfType()` call + method call on view instance | Never direct reference storage |
-| `main.ts` → `SettingsTab` | Constructor injection of `this` (plugin instance) | Tab reads/writes `plugin.settings` directly |
-| `main.ts` → Pipeline | Direct method call on `NoteCollector`, `LLMClient`, `OutputWriter` inside `runGeneration()` | All pipeline classes are plain TypeScript - no Obsidian API coupling except `NoteCollector` (vault) and `OutputWriter` (vault) |
-| `LLMClient` → `LLMProvider` | Interface method call | Concrete provider injected at construction |
-| `SidebarView` → `Plugin` | Reference to plugin passed in constructor; calls `plugin.runGeneration(folder)` | Standard pattern for views that need to trigger plugin actions |
+| Boundary | Communication | v2 Change |
+|----------|---------------|-----------|
+| `GenerationService` -> `callLLM` | Function call | Signature changes: `(apiKey, model, messages[])` -> `(settings, {system, user})` |
+| `sidebar.ts` -> `GenerationService` | Direct method call | Three new methods added; existing `generate()` unchanged |
+| `settings.ts` -> all consumers | Reference to `plugin.settings` | Shape changes; all consumers updated to read `settings[settings.provider].apiKey` etc. |
+| `generation.ts` -> `app.metadataCache` | New dependency | Tag and link collectors read `getFileCache()` and `getFirstLinkpathDest()` |
 
-## Scaling Considerations
+---
 
-This is a local plugin - "scale" means vault size and folder size, not users.
+## Anti-Patterns to Avoid in v2
 
-| Concern | Small vault (< 50 notes/folder) | Medium folder (50-200 notes) | Large folder (200+ notes) |
-|---------|--------------------------------|------------------------------|---------------------------|
-| Token budget | Single LLM call | Single call likely fine | Batch + synthesize required |
-| Sidebar render | Instant | Instant | `getAllFolders()` is synchronous and fast; no pagination needed |
-| File reads | All in memory for generation duration only | Same | Same - Node/Electron heap handles this; no streaming needed |
+### Anti-Pattern 1: Per-Provider callLLM Functions Called Directly by GenerationService
 
-The `ContextBudgetManager` handles the main scaling concern. Token budget heuristic from PROJECT.md: `chars / 4`; reserve ~20k tokens for prompt + output; remainder available for notes.
+**What people do:** Have `GenerationService` call `callOpenAI`, `callGemini`, `callAnthropic` directly with a switch statement inside `generate()`.
+
+**Why it's wrong:** Duplicates the dispatch logic across `generate()`, `generateForTag()`, `generateForLinks()`, etc. Any new provider requires changes in multiple places.
+
+**Do this instead:** One `callLLM(settings, messages)` dispatcher. All `GenerationService` methods call it. Adding a fourth provider means touching one switch statement and one provider config block in settings.
+
+### Anti-Pattern 2: Storing API Keys in Per-Mode State
+
+**What people do:** Each collection mode UI holds its own copy of the API key or provider selection.
+
+**Why it's wrong:** Keys are already in settings. Reading from two places causes stale-state bugs.
+
+**Do this instead:** All generation methods read provider config exclusively from `this.settings`. The sidebar never holds API key references.
+
+### Anti-Pattern 3: Blocking Tag/Link Collection on MetadataCache Not Ready
+
+**What people do:** Call `getFileCache()` immediately in `onload()` or trigger collection before the vault is indexed.
+
+**Why it's wrong:** MetadataCache may not be populated immediately at startup. Collection triggered by user action (button click) is always safe because the vault is indexed by the time users can interact with the sidebar.
+
+**Do this instead:** Trigger all collection from user-initiated actions only. If edge cases arise (e.g., freshly imported vault), check for null returns from `getFileCache()` and surface a user-facing message.
+
+### Anti-Pattern 4: Changing the NoteSource Interface
+
+**What people do:** Add mode-specific fields to `NoteSource` (e.g., `tag: string`, `sourceFile: TFile`).
+
+**Why it's wrong:** The interface's value is its simplicity. The pipeline only cares about name and content. Mixing collection metadata into the pipeline object creates coupling.
+
+**Do this instead:** Keep `NoteSource` as `{ name: string; content: string }`. Any mode-specific metadata (like which tag was queried) belongs in the `GenerationService` method's local scope for the output path/label computation only.
+
+### Anti-Pattern 5: Rebuilding the Settings Shape Without a Migration Path
+
+**What people do:** Change `ActiveRecallSettings` from flat to nested without handling `loadSettings()` for existing users.
+
+**Why it's wrong:** Existing users have `{ apiKey: "sk-...", model: "gpt-4.1" }` in `data.json`. After migration, the nested `openai: { apiKey: '', model: '' }` defaults overwrite their stored values.
+
+**Do this instead:** In `loadSettings()`, after `Object.assign`, check if the old flat `apiKey` field exists and copy it into `settings.openai.apiKey` if `settings.openai.apiKey` is empty. One-time migration, then drop the legacy field.
+
+---
 
 ## Sources
 
-- [Obsidian Developer Docs - Anatomy of a plugin](https://docs.obsidian.md/Plugins/Getting+started/Anatomy+of+a+plugin) - HIGH confidence
-- [Obsidian Developer Docs - Views](https://docs.obsidian.md/Plugins/User+interface/Views) - HIGH confidence
-- [Obsidian Developer Docs - Context menus](https://docs.obsidian.md/Plugins/User+interface/Context+menus) - HIGH confidence
-- [Obsidian Developer Docs - Plugin API reference](https://docs.obsidian.md/Reference/TypeScript+API/Plugin) - HIGH confidence
-- [Obsidian Developer Docs - Vault](https://docs.obsidian.md/Plugins/Vault) - HIGH confidence
-- [Marcus Olsson plugin docs - Settings](https://marcusolsson.github.io/obsidian-plugin-docs/user-interface/settings) - HIGH confidence (verified against official API)
-- [Marcus Olsson plugin docs - Views](https://marcusolsson.github.io/obsidian-plugin-docs/user-interface/views) - HIGH confidence
-- [Marcus Olsson plugin docs - Context menus](https://marcusolsson.github.io/obsidian-plugin-docs/user-interface/context-menus) - HIGH confidence
-- [DeepWiki - Obsidian API Plugin Development](https://deepwiki.com/obsidianmd/obsidian-api/3-plugin-development) - MEDIUM confidence (secondary source, consistent with official docs)
-- [upskil.dev - Making a Custom View in Obsidian](https://upskil.dev/blog/obsidian_plugin_custom_view) - MEDIUM confidence (community tutorial, verified against official API)
-- [obsidian-sample-plugin GitHub](https://github.com/obsidianmd/obsidian-sample-plugin) - HIGH confidence (official reference template)
+- Direct inspection of `src/generation.ts`, `src/settings.ts`, `src/sidebar.ts`, `src/main.ts`, `src/prompts.ts` - HIGH confidence
+- [Gemini API generateContent reference - Google AI for Developers](https://ai.google.dev/api/generate-content) - HIGH confidence
+- [Anthropic Messages API reference](https://platform.claude.com/docs/en/api/messages) - HIGH confidence
+- [MetadataCache and Link Resolution - DeepWiki obsidianmd/obsidian-api](https://deepwiki.com/obsidianmd/obsidian-api/2.4-metadatacache-and-link-resolution) - MEDIUM confidence (secondary source, consistent with official API)
+- [MetadataCache resolvedLinks - Obsidian Developer Docs](https://docs.obsidian.md/Reference/TypeScript+API/MetadataCache/resolvedLinks) - HIGH confidence
+- [How to get backlinks for a file - Obsidian Forum](https://forum.obsidian.md/t/how-to-get-backlinks-for-a-file/45314) - MEDIUM confidence (community source)
 
 ---
-*Architecture research for: Obsidian Active Recall Plugin*
-*Researched: 2026-03-09*
+*Architecture research for: Obsidian Active Recall Plugin v2.0 - Multi-Provider & Flexible Collection*
+*Researched: 2026-03-21*
