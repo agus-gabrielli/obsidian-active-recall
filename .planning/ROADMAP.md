@@ -156,7 +156,7 @@ Plans:
 
 Plans:
 - [x] 08-01-PLAN.md - TDD: Gemini/Anthropic adapters, callLLM dispatcher, provider-aware classifyError
-- [ ] 08-02-PLAN.md - Production build and human-verify all three providers in Obsidian
+- [x] 08-02-PLAN.md - Production build and human-verify all three providers in Obsidian
 
 ### Phase 9: Flexible Note Collection
 **Goal**: Users can generate self-tests from notes gathered by tag, by following links from a root note, or from a single note - in addition to the existing folder mode
@@ -171,7 +171,7 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 08-01-PLAN.md - TDD: Gemini/Anthropic adapters, callLLM dispatcher, provider-aware classifyError
+- [x] 08-01-PLAN.md - TDD: Gemini/Anthropic adapters, callLLM dispatcher, provider-aware classifyError
 - [ ] 08-02-PLAN.md - Production build and human-verify all three providers in Obsidian
 
 ### Phase 10: Sidebar Redesign
