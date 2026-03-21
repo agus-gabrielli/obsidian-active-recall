@@ -152,7 +152,11 @@ Plans:
   2. With Claude selected and a valid Anthropic key, generation produces a correctly formatted _self-test.md using the Anthropic Messages API (api.anthropic.com)
   3. When a Gemini API call fails (wrong key, quota exceeded), the error message names Gemini specifically (e.g. "Gemini API key invalid") rather than showing a generic error
   4. When a Claude API call fails, the error message names Claude specifically; raw HTTP error strings are not shown to users
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 08-01-PLAN.md - TDD: Gemini/Anthropic adapters, callLLM dispatcher, provider-aware classifyError
+- [ ] 08-02-PLAN.md - Production build and human-verify all three providers in Obsidian
 
 ### Phase 9: Flexible Note Collection
 **Goal**: Users can generate self-tests from notes gathered by tag, by following links from a root note, or from a single note - in addition to the existing folder mode
@@ -164,7 +168,11 @@ Plans:
   3. A depth-2 toggle in the linked-notes picker extends collection to links-of-links; toggling it on and triggering generation includes the second layer of linked notes
   4. Right-clicking any markdown file in the file explorer shows a "Generate Self-Test" option; selecting it generates a self-test for that single note written to the same folder as the source note (e.g. `my-note_self-test.md`)
   5. All three new modes feed the existing batch+synthesize pipeline unchanged - large note sets are handled without manual intervention
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 08-01-PLAN.md - TDD: Gemini/Anthropic adapters, callLLM dispatcher, provider-aware classifyError
+- [ ] 08-02-PLAN.md - Production build and human-verify all three providers in Obsidian
 
 ### Phase 10: Sidebar Redesign
 **Goal**: The sidebar presents all four generation modes (folder, tag, linked notes, single note) in a clear navigable structure, and shows tag-based and link-based self-tests alongside folder-based ones
@@ -175,7 +183,11 @@ Plans:
   2. The Tag panel lists previously generated tag-based self-tests with their last-generated date and a Regenerate button, plus an input to generate for a new tag
   3. The Links panel lists previously generated link-based self-tests from `_self-tests/` alongside the folder-based ones; each shows last-generated date and a Regenerate button
   4. After generation from any mode completes, the sidebar reflects the updated state without requiring a manual refresh
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 08-01-PLAN.md - TDD: Gemini/Anthropic adapters, callLLM dispatcher, provider-aware classifyError
+- [ ] 08-02-PLAN.md - Production build and human-verify all three providers in Obsidian
 
 ### Phase 11: v2.0 Release
 **Goal**: README documents multi-provider setup and all new collection modes clearly; the plugin passes Obsidian community store review requirements and the submission PR is open against obsidianmd/obsidian-releases
@@ -186,7 +198,11 @@ Plans:
   2. README documents all four generation modes (folder, tag, linked notes, single note) with enough detail for a non-technical user to use each one
   3. manifest.json version is bumped to 2.0.0; GitHub release tag matches exactly (no `v` prefix); all store submission checklist items pass
   4. PR is open against obsidianmd/obsidian-releases with the required files (manifest.json, main.js, styles.css) attached to the GitHub release
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 08-01-PLAN.md - TDD: Gemini/Anthropic adapters, callLLM dispatcher, provider-aware classifyError
+- [ ] 08-02-PLAN.md - Production build and human-verify all three providers in Obsidian
 
 ---
 
@@ -204,7 +220,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 5. Polish and Release | 3/3 | Complete | 2026-03-17 |
 | 6. Refinements | 4/4 | Complete | 2026-03-19 |
 | 7. Provider Settings and Migration | 2/2 | Complete   | 2026-03-21 |
-| 8. Multi-Provider LLM Dispatch | 0/TBD | Not started | - |
+| 8. Multi-Provider LLM Dispatch | 0/2 | Not started | - |
 | 9. Flexible Note Collection | 0/TBD | Not started | - |
 | 10. Sidebar Redesign | 0/TBD | Not started | - |
 | 11. v2.0 Release | 0/TBD | Not started | - |
