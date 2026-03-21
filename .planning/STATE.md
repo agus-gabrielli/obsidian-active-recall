@@ -1,32 +1,33 @@
 ---
 gsd_state_version: 1.0
-milestone: v1.0
-milestone_name: milestone
-current_phase: 06-refinements-and-improvements (in progress)
-current_plan: 06-03 complete
+milestone: v2.0
+milestone_name: multi-provider-and-flexible-collection
+current_phase: Not started (defining requirements)
+current_plan: —
 status: planning
-last_updated: "2026-03-19T02:16:43.820Z"
+last_updated: "2026-03-21"
 progress:
-  total_phases: 7
-  completed_phases: 6
-  total_plans: 15
-  completed_plans: 15
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
 ---
 
 # Session State
 
 ## Project Reference
 
-See: .planning/PROJECT.md
+See: .planning/PROJECT.md (updated 2026-03-21)
+**Core value:** Users can generate a structured self-test from any folder of notes in one click, turning passive note review into active recall practice.
+**Current focus:** Defining requirements for v2.0
 
 ## Position
 
-**Milestone:** v1.0 milestone
-**Current phase:** 06-refinements-and-improvements (in progress)
-**Current plan:** 06-03 complete
-**Status:** Ready to plan
-
-**Phase 06 Progress:** All 4 plans complete - 06-01 (prompt extraction), 06-02 (model dropdown + loading indicator), 06-03 (README science section), 06-04 (build verify + human verification with post-checkpoint fixes).
+**Milestone:** v2.0 Multi-Provider & Flexible Collection
+**Current phase:** Not started (defining requirements)
+**Current plan:** -
+**Status:** Defining requirements
+**Last activity:** 2026-03-21 - Milestone v2.0 started
 
 ## Decisions
 

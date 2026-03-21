@@ -8,41 +8,49 @@ An Obsidian community plugin that helps users learn from their own notes through
 
 Users can generate a structured self-test from any folder of notes in one click, turning passive note review into active recall practice.
 
+## Current Milestone: v2.0 Multi-Provider & Flexible Collection
+
+**Goal:** Add multi-provider LLM support (Gemini, Claude) and flexible note collection modes (by tag, by linked notes, single note), then release to the Obsidian community store.
+
+**Target features:**
+- Google Gemini support via Google AI Studio API (generativelanguage.googleapis.com)
+- Anthropic Claude support via native Anthropic Messages API (api.anthropic.com)
+- Generation by tag - collect all notes sharing a tag, output to _self-tests/ folder
+- Generation by linked notes - select a root/MOC note, follow depth-1 links (optional depth-2)
+- Single note generation
+- Final release to Obsidian community plugin store (moved from v1.0 phase 7)
+
 ## Requirements
 
 ### Validated
 
-(None yet — ship to validate)
+- User can generate a `_self-test.md` by selecting a folder from the sidebar or command palette (v1.0)
+- Plugin reads all top-level `.md` files in the selected folder (v1.0)
+- LLM generates open-ended recall questions with hints, reference answers, and concept maps (v1.0)
+- Context window management: batch + synthesize for large folders (v1.0)
+- Plugin settings tab with provider, API key, model, language, toggles, custom instructions (v1.0)
+- Sidebar panel with Generate/Regenerate buttons per folder (v1.0)
+- All entry points wired: command palette, context menu, sidebar (v1.0)
+- OpenAI provider fully working with curated model dropdown (v1.0)
 
 ### Active
 
-- [ ] User can generate a `_self-test.md` by selecting a folder from the sidebar or command palette
-- [ ] Plugin reads all top-level `.md` files in the selected folder (non-recursive, excludes `_self-test.md` itself)
-- [ ] LLM generates open-ended recall questions ordered from foundational to advanced
-- [ ] Questions are categorized into Conceptual, Relationships, and Application when content supports it
-- [ ] Each question includes a hidden hint using Obsidian collapsible callout syntax
-- [ ] Each question includes a hidden reference answer using Obsidian collapsible callout syntax
-- [ ] LLM generates a brief concept map before the questions when content supports it
-- [ ] Context window management: batch + synthesize for folders exceeding token budget
-- [ ] Plugin settings tab: provider, API key, model, language, hint/answer/map toggles, custom instructions
-- [ ] Sidebar panel (leaf view): lists folders with/without self-tests, with Generate/Regenerate buttons
-- [ ] Regeneration overwrites `_self-test.md` without backup
-- [ ] Command: "Generate Self-Test for Current Folder"
-- [ ] Command: "Open Active Recall Panel"
-- [ ] Context menu on folders: "Generate Self-Test"
-- [ ] Note collection abstracted behind `NoteSource` interface for future collection modes
-- [ ] OpenAI is the first wired LLM provider; provider interface abstracted for future additions
-- [ ] Output is standard `.md` — no plugin-specific formats, no database
+- [ ] Gemini provider via Google AI Studio API
+- [ ] Claude provider via native Anthropic Messages API
+- [ ] Provider selection in settings with per-provider API key and model configuration
+- [ ] Generation by tag - collect notes by tag, output to _self-tests/ folder
+- [ ] Generation by linked notes from root/MOC note (depth 1, optional depth 2)
+- [ ] Single note generation
+- [ ] Final release to Obsidian community plugin store
 
 ### Out of Scope
 
-- Spaced repetition scheduling — deferred to v2 (adds significant complexity, not core to v1 value)
-- Single-note generation (`my-note_self-test.md`) — deferred to v2
-- Alternative collection modes (by tag, link graph, manual selection) — v2 architecture-ready but not wired
-- Content change detection in sidebar — v2
-- Anthropic and custom endpoint providers — v2 (abstraction in place, only OpenAI wired)
-- Automatic backup of previous self-tests — too complex for v1; user renames manually if needed
-- Real-time sync or collaboration — out of scope entirely
+- Spaced repetition scheduling - deferred to future (adds significant complexity)
+- Content change detection in sidebar - future
+- OpenAI-compatible proxy for Gemini/Claude - using native APIs instead
+- Automatic backup of previous self-tests - user renames manually if needed
+- Real-time sync or collaboration - out of scope entirely
+- Recursive folder scanning - users control depth via folder structure
 
 ## Context
 
@@ -71,4 +79,4 @@ Users can generate a structured self-test from any folder of notes in one click,
 | Standard `.md` output only | Full portability; no lock-in to plugin-specific rendering | — Pending |
 
 ---
-*Last updated: 2026-03-09 after initialization*
+*Last updated: 2026-03-21 after v2.0 milestone start*
