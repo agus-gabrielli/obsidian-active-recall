@@ -297,7 +297,7 @@ describe('PROV-04: Gemini adapter', () => {
       generationConfig: { maxOutputTokens: number };
     };
     expect(body.system_instruction.parts[0].text).toBe('You are a helpful assistant.');
-    expect(body.contents[0].role).toBe('user');
+    expect(body.contents[0]!.role).toBe('user');
     expect(body.generationConfig.maxOutputTokens).toBe(8192);
   });
 

@@ -1,5 +1,5 @@
 import { App, TFile, TFolder, Notice, requestUrl } from 'obsidian';
-import { ActiveRecallSettings } from './settings';
+import { ActiveRecallSettings, LLMProvider, PROVIDER_CONFIG } from './settings';
 import {
     SYSTEM_MESSAGE,
     batchTemplate,
@@ -114,8 +114,8 @@ export class LLMError extends Error {
     }
 }
 
-export function classifyError(status: number, apiError?: unknown): string {
-    if (status === 401) return 'Invalid API key. Check your key in Settings.';
+export function classifyError(status: number, apiError?: unknown, provider = 'OpenAI'): string {
+    if (status === 401) return `${provider} API key invalid. Check your key in Settings.`;
     if (status === 429) return 'Rate limit reached. Wait a moment, then try again.';
     if (status === 400) {
         const code = (apiError as { error?: { code?: string } })?.error?.code;
@@ -123,11 +123,11 @@ export function classifyError(status: number, apiError?: unknown): string {
             return 'Folder is too large to process. Try removing some notes or reducing note length.';
         }
     }
-    if (status >= 500) return 'OpenAI service error. Please try again later.';
+    if (status >= 500) return `${provider} service error. Please try again later.`;
     return 'Network error. Check your internet connection.';
 }
 
-export async function callLLM(
+async function callOpenAI(
     apiKey: string,
     model: string,
     messages: Array<{ role: 'system' | 'user'; content: string }>
@@ -158,6 +158,111 @@ export async function callLLM(
     }
 
     return content;
+}
+
+async function callGemini(
+    apiKey: string,
+    model: string,
+    messages: Array<{ role: 'system' | 'user'; content: string }>
+): Promise<string> {
+    const systemMsg = messages.find(m => m.role === 'system');
+    const userMessages = messages.filter(m => m.role !== 'system');
+
+    const body: Record<string, unknown> = {
+        contents: userMessages.map(m => ({
+            role: 'user',
+            parts: [{ text: m.content }],
+        })),
+        generationConfig: { maxOutputTokens: 8192 },
+    };
+    if (systemMsg) {
+        body.system_instruction = { parts: [{ text: systemMsg.content }] };
+    }
+
+    const response = await requestUrl({
+        url: `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+        throw: false,
+    });
+
+    if (response.status !== 200) {
+        throw new LLMError(response.status, response.json);
+    }
+
+    const candidate = response.json?.candidates?.[0];
+    if (!candidate) {
+        new Notice('Gemini blocked this content due to safety filters.');
+        throw new Error('Gemini safety block');
+    }
+
+    const content = candidate?.content?.parts?.[0]?.text;
+    if (candidate?.finishReason === 'MAX_TOKENS') {
+        new Notice('Warning: response may be truncated due to token limit.');
+    }
+    if (!content) {
+        throw new Error('Empty response from LLM');
+    }
+    return content;
+}
+
+async function callAnthropic(
+    apiKey: string,
+    model: string,
+    messages: Array<{ role: 'system' | 'user'; content: string }>
+): Promise<string> {
+    const systemMsg = messages.find(m => m.role === 'system');
+    const userMessages = messages.filter(m => m.role !== 'system');
+
+    const body: Record<string, unknown> = {
+        model,
+        max_tokens: 8192,
+        messages: userMessages.map(m => ({ role: m.role, content: m.content })),
+    };
+    if (systemMsg) {
+        body.system = systemMsg.content;
+    }
+
+    const response = await requestUrl({
+        url: 'https://api.anthropic.com/v1/messages',
+        method: 'POST',
+        headers: {
+            'x-api-key': apiKey,
+            'anthropic-version': '2023-06-01',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+        throw: false,
+    });
+
+    if (response.status !== 200) {
+        throw new LLMError(response.status, response.json);
+    }
+
+    const content = response.json?.content?.[0]?.text;
+    if (response.json?.stop_reason === 'max_tokens') {
+        new Notice('Warning: response may be truncated due to token limit.');
+    }
+    if (!content) {
+        throw new Error('Empty response from LLM');
+    }
+    return content;
+}
+
+export async function callLLM(
+    provider: LLMProvider,
+    apiKey: string,
+    model: string,
+    messages: Array<{ role: 'system' | 'user'; content: string }>
+): Promise<string> {
+    switch (provider) {
+        case 'gemini': return callGemini(apiKey, model, messages);
+        case 'anthropic': return callAnthropic(apiKey, model, messages);
+        case 'openai':
+        default:
+            return callOpenAI(apiKey, model, messages);
+    }
 }
 
 export async function writeOutput(app: App, folderPath: string, content: string): Promise<void> {
@@ -197,7 +302,7 @@ export class GenerationService {
                 // CTX-02: single call
                 const userMessage = buildBatchPrompt(batches[0]!, this.settings);
                 const messages = buildMessages(SYSTEM_MESSAGE, userMessage);
-                finalContent = await callLLM(providerCfg.apiKey, providerCfg.model, messages);
+                finalContent = await callLLM(this.settings.provider, providerCfg.apiKey, providerCfg.model, messages);
             } else {
                 // CTX-03: batch + synthesize
                 const partialOutputs: string[] = [];
@@ -205,12 +310,12 @@ export class GenerationService {
                     this.statusBarItem.setText(`Generating self-test... (batch ${i + 1}/${batches.length})`);
                     const userMessage = buildBatchPrompt(batches[i]!, this.settings);
                     const messages = buildMessages(SYSTEM_MESSAGE, userMessage);
-                    const partial = await callLLM(providerCfg.apiKey, providerCfg.model, messages);
+                    const partial = await callLLM(this.settings.provider, providerCfg.apiKey, providerCfg.model, messages);
                     partialOutputs.push(partial);
                 }
                 const synthesisMessage = buildSynthesisPrompt(partialOutputs, this.settings);
                 const synthesisMessages = buildMessages(SYSTEM_MESSAGE, synthesisMessage);
-                finalContent = await callLLM(providerCfg.apiKey, providerCfg.model, synthesisMessages);
+                finalContent = await callLLM(this.settings.provider, providerCfg.apiKey, providerCfg.model, synthesisMessages);
             }
 
             // Prepend YAML frontmatter
@@ -220,8 +325,9 @@ export class GenerationService {
             await writeOutput(this.app, folderPath, output);
             new Notice(`Self-test written to ${folderName}/`);
         } catch (err) {
+            const providerLabel = PROVIDER_CONFIG[this.settings.provider].label;
             const msg = err instanceof LLMError
-                ? classifyError(err.status, err.apiError)
+                ? classifyError(err.status, err.apiError, providerLabel)
                 : 'Generation failed. Check your settings and try again.';
             new Notice(msg);
         } finally {
