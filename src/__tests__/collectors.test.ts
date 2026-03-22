@@ -280,6 +280,78 @@ describe('collectNotesByLinks', () => {
     expect(result).not.toContain(image);
   });
 
+  test('depth 1 includes backlinks (notes that link TO root)', () => {
+    const app = createMockApp();
+    const rootFile = new TFile('root.md');
+    const fileA = new TFile('a.md');
+    const fileB = new TFile('b.md');
+
+    // root links to a (outgoing), b links to root (backlink)
+    app.metadataCache.resolvedLinks = {
+      'root.md': { 'a.md': 1 },
+      'b.md': { 'root.md': 1 },
+    };
+    (app.vault.getFileByPath as jest.Mock).mockImplementation((path: string) => {
+      if (path === 'a.md') return fileA;
+      if (path === 'b.md') return fileB;
+      if (path === 'root.md') return rootFile;
+      return null;
+    });
+
+    const result = collectNotesByLinks(app as any, rootFile as any, 1);
+    expect(result).toHaveLength(3);
+    expect(result).toContain(rootFile);
+    expect(result).toContain(fileA);
+    expect(result).toContain(fileB);
+  });
+
+  test('deduplicates when A links to B and B links back to A', () => {
+    const app = createMockApp();
+    const rootFile = new TFile('root.md');
+    const fileA = new TFile('a.md');
+
+    // Mutual links: root <-> a
+    app.metadataCache.resolvedLinks = {
+      'root.md': { 'a.md': 1 },
+      'a.md': { 'root.md': 1 },
+    };
+    (app.vault.getFileByPath as jest.Mock).mockImplementation((path: string) => {
+      if (path === 'a.md') return fileA;
+      if (path === 'root.md') return rootFile;
+      return null;
+    });
+
+    const result = collectNotesByLinks(app as any, rootFile as any, 1);
+    expect(result).toHaveLength(2);
+    expect(result).toContain(rootFile);
+    expect(result).toContain(fileA);
+  });
+
+  test('depth 2 follows backlinks at both levels', () => {
+    const app = createMockApp();
+    const rootFile = new TFile('root.md');
+    const fileA = new TFile('a.md');
+    const fileB = new TFile('b.md');
+
+    // a links to root (backlink), b links to a (backlink of a)
+    app.metadataCache.resolvedLinks = {
+      'a.md': { 'root.md': 1 },
+      'b.md': { 'a.md': 1 },
+    };
+    (app.vault.getFileByPath as jest.Mock).mockImplementation((path: string) => {
+      if (path === 'a.md') return fileA;
+      if (path === 'b.md') return fileB;
+      if (path === 'root.md') return rootFile;
+      return null;
+    });
+
+    const result = collectNotesByLinks(app as any, rootFile as any, 2);
+    expect(result).toHaveLength(3);
+    expect(result).toContain(rootFile);
+    expect(result).toContain(fileA);
+    expect(result).toContain(fileB);
+  });
+
   test('excludes self-test files from link traversal', () => {
     const app = createMockApp();
     const rootFile = new TFile('root.md');

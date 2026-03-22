@@ -86,7 +86,8 @@ export function getAllVaultTags(app: App): Map<string, number> {
 
 /**
  * BFS traversal of the resolved links graph starting from rootFile.
- * Collects notes up to the given depth (1 or 2).
+ * Collects notes up to the given depth (1 or 2), following both
+ * outgoing links and backlinks (notes that link TO each visited node).
  * Excludes non-md files, self-test files, and already-visited nodes.
  */
 export function collectNotesByLinks(
@@ -102,9 +103,20 @@ export function collectNotesByLinks(
         const item = queue.shift()!;
         if (item.d >= depth) continue;
 
-        const links = app.metadataCache.resolvedLinks[item.path] ?? {};
+        // Outgoing links
+        const outgoing = app.metadataCache.resolvedLinks[item.path] ?? {};
 
-        for (const linkedPath of Object.keys(links)) {
+        // Backlinks: files that link TO this node
+        const backlinks: string[] = [];
+        for (const [sourcePath, destinations] of Object.entries(app.metadataCache.resolvedLinks)) {
+            if (item.path in destinations && !visited.has(sourcePath)) {
+                backlinks.push(sourcePath);
+            }
+        }
+
+        const allLinkedPaths = [...Object.keys(outgoing), ...backlinks];
+
+        for (const linkedPath of allLinkedPaths) {
             if (visited.has(linkedPath)) continue;
 
             const linkedFile = app.vault.getFileByPath(linkedPath);

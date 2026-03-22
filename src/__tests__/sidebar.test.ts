@@ -65,6 +65,21 @@ describe('getFolderStatuses', () => {
 
     expect(statuses).toHaveLength(0);
   });
+
+  it('excludes _self-tests directory and its subfolders', () => {
+    const noteFile = new TFile('Notes/note1.md');
+    const notesFolder = new TFolder('Notes', [noteFile]);
+    const tagFile = new TFile('_self-tests/tags/python.md');
+    const selfTestsFolder = new TFolder('_self-tests', [tagFile]);
+    const tagsFolder = new TFolder('_self-tests/tags', [tagFile]);
+    const app = createMockApp();
+    app.vault.getAllFolders.mockReturnValue([notesFolder, selfTestsFolder, tagsFolder]);
+
+    const statuses = getFolderStatuses(app as never);
+
+    expect(statuses).toHaveLength(1);
+    expect(statuses[0]!.folder).toBe(notesFolder);
+  });
 });
 
 describe('getLastGeneratedDate', () => {

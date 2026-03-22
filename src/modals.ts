@@ -103,10 +103,13 @@ export class LinkedNotesPickerModal extends Modal {
         this.generateBtn.disabled = true;
         this.generateBtn.addEventListener('click', () => {
             if (!this.selectedFile) return;
-            // D-07: If no outgoing links, show notice and abort
-            const links = (this.app as App).metadataCache.resolvedLinks[this.selectedFile.path] ?? {};
-            if (Object.keys(links).length === 0) {
-                new Notice('This note has no outgoing links. Try a different note.');
+            // D-07: If no outgoing links or backlinks, show notice and abort
+            const outgoing = (this.app as App).metadataCache.resolvedLinks[this.selectedFile.path] ?? {};
+            const hasOutgoing = Object.keys(outgoing).length > 0;
+            const hasBacklinks = Object.values((this.app as App).metadataCache.resolvedLinks)
+                .some(dests => this.selectedFile!.path in dests);
+            if (!hasOutgoing && !hasBacklinks) {
+                new Notice('This note has no linked notes. Try a different note.');
                 return;
             }
             this.onGenerate(this.selectedFile, this.depth);

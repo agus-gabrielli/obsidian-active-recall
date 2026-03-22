@@ -17,6 +17,9 @@ export function getFolderStatuses(app: App): FolderStatus[] {
   const result: FolderStatus[] = [];
 
   for (const folder of folders) {
+    // Skip the _self-tests output directory and its subfolders
+    if (folder.path === '_self-tests' || folder.path.startsWith('_self-tests/')) continue;
+
     const hasEligibleNote = folder.children.some(
       (child) =>
         child instanceof TFile &&
