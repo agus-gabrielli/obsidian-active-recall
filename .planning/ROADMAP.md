@@ -184,7 +184,12 @@ Plans:
   2. The Tag panel lists previously generated tag-based self-tests with their last-generated date and a Regenerate button, plus an input to generate for a new tag
   3. The Links panel lists previously generated link-based self-tests from `_self-tests/` alongside the folder-based ones; each shows last-generated date and a Regenerate button
   4. After generation from any mode completes, the sidebar reflects the updated state without requiring a manual refresh
-**Plans**: TBD
+**Plans**: 3 plans
+
+Plans:
+- [ ] 10-01-PLAN.md - Add activeTab setting, generatingTags/generatingLinks Sets, extend mock, write failing test stubs (Wave 1)
+- [ ] 10-02-PLAN.md - Rewrite sidebar.ts with tab bar and mode panels, update main.ts constructor, add CSS (Wave 2)
+- [ ] 10-03-PLAN.md - Production build and human-verify tabbed sidebar in Obsidian (Wave 3)
 
 ### Phase 11: v2.0 Release
 **Goal**: README documents multi-provider setup and all new collection modes clearly; the plugin passes Obsidian community store review requirements and the submission PR is open against obsidianmd/obsidian-releases
@@ -215,5 +220,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 7. Provider Settings and Migration | 2/2 | Complete   | 2026-03-21 |
 | 8. Multi-Provider LLM Dispatch | 2/2 | Complete | 2026-03-21 |
 | 9. Flexible Note Collection | 2/3 | In Progress|  |
-| 10. Sidebar Redesign | 0/TBD | Not started | - |
+| 10. Sidebar Redesign | 0/3 | Not started | - |
 | 11. v2.0 Release | 0/TBD | Not started | - |
