@@ -31,6 +31,7 @@ const defaultSettings: ActiveRecallSettings = {
   generateConceptMap: true,
   customInstructions: '',
   singleNoteOutputMode: 'centralized',
+  activeTab: 'folders',
 };
 
 beforeEach(() => {
@@ -488,6 +489,7 @@ describe('GenerationService provider error label', () => {
       generateConceptMap: true,
       customInstructions: '',
       singleNoteOutputMode: 'centralized',
+      activeTab: 'folders',
     };
 
     const statusBar = createMockStatusBarItem();

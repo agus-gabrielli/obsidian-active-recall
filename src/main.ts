@@ -31,7 +31,7 @@ export default class ActiveRecallPlugin extends Plugin {
 
         this.registerView(
             VIEW_TYPE_ACTIVE_RECALL,
-            (leaf) => new ActiveRecallSidebarView(leaf, this.app, generationService)
+            (leaf) => new ActiveRecallSidebarView(leaf, this.app, this, generationService)
         );
 
         const activateView = buildActivateView(this.app);
