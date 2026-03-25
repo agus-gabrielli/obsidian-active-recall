@@ -1,9 +1,10 @@
-import { TFile, TFolder, Menu, createMockApp } from '../__mocks__/obsidian';
+import { TFile, TFolder, Menu, createMockApp, createMockWorkspaceLeaf } from '../__mocks__/obsidian';
 import {
   getFolderStatuses,
   getLastGeneratedDate,
   buildContextMenuHandler,
   buildActivateView,
+  ActiveRecallSidebarView,
 } from '../sidebar';
 
 describe('getFolderStatuses', () => {
@@ -144,5 +145,50 @@ describe('file-menu context menu handler', () => {
 
     const items = menu.getItems();
     expect(items).toHaveLength(0);
+  });
+});
+
+describe('tabbed sidebar', () => {
+  it('renderPanel creates a tab bar with three tabs: Folders, Tags, Links', () => {
+    // Setup: create sidebar view, call refresh()
+    // Assert: contentEl.createDiv called with cls 'active-recall-tab-bar'
+    // Assert: three createEl('button') calls with text Folders, Tags, Links
+    expect(true).toBe(false); // stub - will be implemented in Plan 02
+  });
+
+  it('clicking Tags tab sets activeTab to tags and re-renders', () => {
+    // Setup: create sidebar, simulate tab click
+    // Assert: activeTab changed, refresh called
+    expect(true).toBe(false);
+  });
+
+  it('active tab is restored from settings on construction', () => {
+    // Setup: create sidebar with settings.activeTab = 'tags'
+    // Assert: Tags panel rendered instead of Folders
+    expect(true).toBe(false);
+  });
+
+  it('Tags panel renders files found in _self-tests/tags/', () => {
+    // Setup: mock app.vault.getFiles() to return files in _self-tests/tags/
+    // Assert: tag names rendered from file paths
+    expect(true).toBe(false);
+  });
+
+  it('Links panel renders files found in _self-tests/links/', () => {
+    // Setup: mock app.vault.getFiles() to return files in _self-tests/links/
+    // Assert: link entry names rendered from file basenames
+    expect(true).toBe(false);
+  });
+
+  it('Tags panel shows spinner when generatingTags has matching tag', () => {
+    // Setup: add tag to generationService.generatingTags
+    // Assert: spinner element created, not regenerate button
+    expect(true).toBe(false);
+  });
+
+  it('Links panel shows spinner when generatingLinks has matching basename', () => {
+    // Setup: add basename to generationService.generatingLinks
+    // Assert: spinner element created, not regenerate button
+    expect(true).toBe(false);
   });
 });

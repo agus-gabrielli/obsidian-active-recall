@@ -100,6 +100,7 @@ export interface App {
     getLeavesOfType(type: string): WorkspaceLeaf[];
     getRightLeaf(split: boolean): WorkspaceLeaf;
     revealLeaf(leaf: WorkspaceLeaf): void;
+    openLinkText(linktext: string, sourcePath: string, newLeaf: boolean): Promise<void>;
   };
   metadataCache: {
     getFileCache(file: TFile): CachedMetadata | null;
@@ -130,6 +131,7 @@ export function createMockApp() {
       getLeavesOfType: jest.fn().mockReturnValue([]),
       getRightLeaf: jest.fn(),
       revealLeaf: jest.fn().mockResolvedValue(undefined),
+      openLinkText: jest.fn().mockResolvedValue(undefined),
     },
     metadataCache: {
       getFileCache: jest.fn().mockReturnValue(null),
@@ -139,19 +141,25 @@ export function createMockApp() {
 }
 
 // Helper: make a mock DOM-like element that sidebar.ts can call createEl/createDiv/createSpan on
-function makeMockEl(): {
+export function makeMockEl(): {
   empty: jest.Mock;
   createDiv: jest.Mock;
   createEl: jest.Mock;
   createSpan: jest.Mock;
   addEventListener: jest.Mock;
+  addClass: jest.Mock;
+  querySelectorAll: jest.Mock;
+  setText: jest.Mock;
 } {
   return {
     empty: jest.fn(),
     createDiv: jest.fn().mockImplementation(() => makeMockEl()),
-    createEl: jest.fn().mockImplementation(() => makeMockEl()),
+    createEl: jest.fn().mockImplementation((_tag: string, _opts?: unknown) => makeMockEl()),
     createSpan: jest.fn().mockImplementation(() => makeMockEl()),
     addEventListener: jest.fn(),
+    addClass: jest.fn(),
+    querySelectorAll: jest.fn().mockReturnValue([]),
+    setText: jest.fn(),
   };
 }
 
