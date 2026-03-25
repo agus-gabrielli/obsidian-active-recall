@@ -4,14 +4,14 @@ milestone: v1.0
 milestone_name: Phases
 current_phase: 10
 current_plan: 2
-status: executing
-last_updated: "2026-03-25T22:53:00Z"
+status: complete
+last_updated: "2026-03-25T23:15:00Z"
 last_activity: 2026-03-25
 progress:
   total_phases: 10
   completed_phases: 9
   total_plans: 25
-  completed_plans: 23
+  completed_plans: 24
 ---
 
 # Session State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Milestone:** v2.0 Multi-Provider & Flexible Collection
 **Current phase:** 10
-**Current plan:** 1
-**Status:** Executing Phase 10
-**Progress bar:** [██████████] 96% (23/25 plans complete)
+**Current plan:** 2
+**Status:** Phase 10 complete
+**Progress bar:** [██████████] 96% (24/25 plans complete)
 **Last activity:** 2026-03-25
 
 ## v2.0 Phase Summary
@@ -40,6 +40,12 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 | 9 - Flexible Note Collection | Generate self-tests from notes by tag, by linked notes, or single note | COL-01 through COL-07 |
 | 10 - Sidebar Redesign | Sidebar supports all four modes with clear navigation | UI-03, UI-04 |
 | 11 - v2.0 Release | README updated; store submission PR open | DIST-03, DIST-04 |
+
+## Key Architecture Decisions (from Phase 10-02 execution)
+
+- 2026-03-25 (10-02): renderSelfTestRow shared across all three panels - avoids duplication of spinner/button/clickable logic; consistent UX
+- 2026-03-25 (10-02): Test recursive DOM traversal via collectCreateSpanCalls/collectCreateDivCalls helpers for mock el inspection
+- 2026-03-25 (10-02): generation.test.ts fixtures updated with activeTab field (Rule 1 auto-fix: TS error from Plan 01 adding field to interface)
 
 ## Key Architecture Decisions (from Phase 10-01 execution)
 
@@ -156,6 +162,8 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 - 2026-03-21: Stopped at - Completed 09-02-PLAN.md
 - 2026-03-25: Executed 10-01 (sidebar data layer scaffold) - 2 tasks, 2 commits (f16313f, 31507b4) - 11 existing sidebar tests pass, 7 new stubs fail as intended
 - 2026-03-25: Stopped at - Completed 10-01-PLAN.md
+- 2026-03-25: Executed 10-02 (sidebar rewrite - tabbed panels) - 2 tasks, 2 commits (65d4a99, 882a597) - 134 tests pass, 0 TS errors, Phase 10 complete
+- 2026-03-25: Stopped at - Completed 10-02-PLAN.md (Phase 10 complete)
 
 ## Accumulated Context
 
