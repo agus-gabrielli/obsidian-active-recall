@@ -222,3 +222,25 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 9. Flexible Note Collection | 2/3 | In Progress|  |
 | 10. Sidebar Redesign | 3/3 | Complete   | 2026-03-25 |
 | 11. v2.0 Release | 0/TBD | Not started | - |
+
+---
+
+## Backlog
+
+### Phase 999.1: Trash icon on sidebar self-test entries (BACKLOG)
+
+**Goal:** Add a delete button (trash icon) next to Regenerate on each self-test row across all sidebar tabs, with confirmation before deleting the file
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
+
+### Phase 999.2: Linked notes picker native suggest modal (BACKLOG)
+
+**Goal:** Replace the custom search list in LinkedNotesPickerModal with Obsidian's native FuzzySuggestModal for note selection, then show a confirmation modal with depth toggle + preview count + Generate button (two-step flow)
+**Requirements:** TBD
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (promote with /gsd:review-backlog when ready)
