@@ -173,7 +173,7 @@ Plans:
 Plans:
 - [x] 09-01-PLAN.md - TDD: Collector functions, output path builders, writeOutputToPath, obsidian mock extensions (Wave 1)
 - [x] 09-02-PLAN.md - Refactor GenerationService.generate() to CollectionSpec, create TagPickerModal and LinkedNotesPickerModal (Wave 2)
-- [ ] 09-03-PLAN.md - Wire commands, file context menu, vault listeners into main.ts; human-verify in Obsidian (Wave 3)
+- [x] 09-03-PLAN.md - Wire commands, file context menu, vault listeners into main.ts; human-verify in Obsidian (Wave 3)
 
 ### Phase 10: Sidebar Redesign
 **Goal**: The sidebar presents all four generation modes (folder, tag, linked notes, single note) in a clear navigable structure, and shows tag-based and link-based self-tests alongside folder-based ones
