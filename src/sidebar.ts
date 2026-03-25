@@ -179,17 +179,6 @@ export class ActiveRecallSidebarView extends ItemView {
       });
     }
 
-    // Generating banner - shown when any generation is in progress
-    const anyGenerating =
-      this.generationService.generatingFolders.size +
-      this.generationService.generatingTags.size +
-      this.generationService.generatingLinks.size > 0;
-    if (anyGenerating) {
-      const banner = container.createDiv({ cls: 'active-recall-generating-banner' });
-      banner.createSpan({ cls: 'active-recall-spinner' });
-      banner.createSpan({ text: 'Generating self-test...' });
-    }
-
     // Panel content - separate DOM subtrees per mode
     const panel = container.createDiv({ cls: 'active-recall-panel-content' });
     if (this.activeTab === 'folders') this.renderFoldersPanel(panel);
@@ -390,36 +379,68 @@ export class ActiveRecallSidebarView extends ItemView {
     }
   }
 
+  private showGeneratingToast(): void {
+    // Remove any existing toast
+    document.querySelector('.active-recall-toast')?.remove();
+
+    const toast = document.createElement('div');
+    toast.className = 'active-recall-toast';
+    const spinner = document.createElement('span');
+    spinner.className = 'active-recall-spinner';
+    toast.appendChild(spinner);
+    const text = document.createElement('span');
+    text.textContent = 'Generating self-test...';
+    toast.appendChild(text);
+    document.body.appendChild(toast);
+
+    // Trigger entrance animation
+    requestAnimationFrame(() => toast.classList.add('active-recall-toast--visible'));
+  }
+
+  private hideGeneratingToast(): void {
+    const toast = document.querySelector('.active-recall-toast');
+    if (!toast) return;
+    toast.classList.remove('active-recall-toast--visible');
+    toast.classList.add('active-recall-toast--hiding');
+    setTimeout(() => toast.remove(), 400);
+  }
+
   public async generateForFolder(folderPath: string): Promise<void> {
     this.generationService.generatingFolders.add(folderPath);
-    this.refresh(); // show spinner / placeholder immediately
+    this.refresh();
+    this.showGeneratingToast();
     try {
       await this.generationService.generate({ mode: 'folder', folderPath });
     } finally {
       this.generationService.generatingFolders.delete(folderPath);
-      this.refresh(); // hide spinner
+      this.hideGeneratingToast();
+      this.refresh();
     }
   }
 
   public async generateForTag(tag: string): Promise<void> {
     const normalizedTag = tag.replace(/^#/, '');
     this.generationService.generatingTags.add(normalizedTag);
-    this.refresh(); // show spinner / placeholder immediately
+    this.refresh();
+    this.showGeneratingToast();
     try {
       await this.generationService.generate({ mode: 'tag', tag });
     } finally {
       this.generationService.generatingTags.delete(normalizedTag);
-      this.refresh(); // hide spinner, update list
+      this.hideGeneratingToast();
+      this.refresh();
     }
   }
 
   public async generateForLinks(rootFile: TFile, depth: 1 | 2): Promise<void> {
     this.generationService.generatingLinks.add(rootFile.basename);
-    this.refresh(); // show spinner / placeholder immediately
+    this.refresh();
+    this.showGeneratingToast();
     try {
       await this.generationService.generate({ mode: 'links', rootFile, depth });
     } finally {
       this.generationService.generatingLinks.delete(rootFile.basename);
+      this.hideGeneratingToast();
       this.refresh();
     }
   }
