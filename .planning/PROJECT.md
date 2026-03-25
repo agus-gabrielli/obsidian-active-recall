@@ -38,9 +38,9 @@ Users can generate a structured self-test from any folder of notes in one click,
 - [x] Gemini provider via Google AI Studio API (Phase 8)
 - [x] Claude provider via native Anthropic Messages API (Phase 8)
 - [x] Provider selection in settings with per-provider API key and model configuration (Phase 7)
-- [ ] Generation by tag - collect notes by tag, output to _self-tests/ folder
-- [ ] Generation by linked notes from root/MOC note (depth 1, optional depth 2)
-- [ ] Single note generation
+- [x] Generation by tag - collect notes by tag, output to _self-tests/tags/ folder (Phase 9)
+- [x] Generation by linked notes from root/MOC note - bidirectional (outgoing + backlinks), depth 1 or 2 (Phase 9)
+- [x] Single note generation - via command palette and file context menu (Phase 9)
 - [ ] Final release to Obsidian community plugin store
 
 ### Out of Scope
@@ -79,4 +79,4 @@ Users can generate a structured self-test from any folder of notes in one click,
 | Standard `.md` output only | Full portability; no lock-in to plugin-specific rendering | — Pending |
 
 ---
-*Last updated: 2026-03-21 after Phase 8 completion (multi-provider LLM dispatch)*
+*Last updated: 2026-03-25 after Phase 9 completion (flexible note collection)*
