@@ -309,6 +309,9 @@ export async function writeOutput(app: App, folderPath: string, content: string)
 }
 
 export class GenerationService {
+    /** Folders currently being generated - read by sidebar for spinner display. */
+    public readonly generatingFolders = new Set<string>();
+
     constructor(
         private app: App,
         private settings: ActiveRecallSettings,
@@ -317,6 +320,8 @@ export class GenerationService {
 
     async generate(spec: CollectionSpec): Promise<void> {
         const providerCfg = this.settings[this.settings.provider];
+        const trackingKey = spec.mode === 'folder' ? spec.folderPath : null;
+        if (trackingKey) this.generatingFolders.add(trackingKey);
         this.statusBarItem.setText('Generating self-test...');
         try {
             let files: TFile[];
@@ -398,6 +403,7 @@ export class GenerationService {
                 : 'Generation failed. Check your settings and try again.';
             new Notice(msg);
         } finally {
+            if (trackingKey) this.generatingFolders.delete(trackingKey);
             this.statusBarItem.setText('');
         }
     }

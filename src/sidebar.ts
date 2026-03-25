@@ -107,8 +107,6 @@ export function buildContextMenuHandler(
  * The sidebar panel ItemView subclass.
  */
 export class ActiveRecallSidebarView extends ItemView {
-  private generatingFolders: Set<string> = new Set();
-
   constructor(
     leaf: WorkspaceLeaf,
     private _app: App,
@@ -166,7 +164,7 @@ export class ActiveRecallSidebarView extends ItemView {
             cls: 'active-recall-date',
           });
         }
-        if (this.generatingFolders.has(status.folder.path)) {
+        if (this.generationService.generatingFolders.has(status.folder.path)) {
           const loading = row.createDiv({ cls: 'active-recall-loading' });
           loading.createSpan({ cls: 'active-recall-spinner' });
           loading.createSpan({ text: 'Generating...', cls: 'active-recall-loading-text' });
@@ -184,7 +182,7 @@ export class ActiveRecallSidebarView extends ItemView {
         const row = section.createDiv({ cls: 'active-recall-folder-row' });
         const info = row.createDiv({ cls: 'active-recall-folder-info' });
         info.createSpan({ text: status.folder.path, cls: 'active-recall-folder-name' });
-        if (this.generatingFolders.has(status.folder.path)) {
+        if (this.generationService.generatingFolders.has(status.folder.path)) {
           const loading = row.createDiv({ cls: 'active-recall-loading' });
           loading.createSpan({ cls: 'active-recall-spinner' });
           loading.createSpan({ text: 'Generating...', cls: 'active-recall-loading-text' });
@@ -197,12 +195,10 @@ export class ActiveRecallSidebarView extends ItemView {
   }
 
   public async generateForFolder(folderPath: string): Promise<void> {
-    this.generatingFolders.add(folderPath);
-    this.refresh();
+    this.refresh(); // show spinner (GenerationService tracks the folder)
     try {
       await this.generationService.generate({ mode: 'folder', folderPath });
     } finally {
-      this.generatingFolders.delete(folderPath);
       this.refresh();
     }
   }

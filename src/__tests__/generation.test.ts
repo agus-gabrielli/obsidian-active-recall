@@ -30,7 +30,7 @@ const defaultSettings: ActiveRecallSettings = {
   generateReferenceAnswers: true,
   generateConceptMap: true,
   customInstructions: '',
-  singleNoteOutputMode: 'same-folder',
+  singleNoteOutputMode: 'centralized',
 };
 
 beforeEach(() => {
@@ -487,7 +487,7 @@ describe('GenerationService provider error label', () => {
       generateReferenceAnswers: true,
       generateConceptMap: true,
       customInstructions: '',
-      singleNoteOutputMode: 'same-folder',
+      singleNoteOutputMode: 'centralized',
     };
 
     const statusBar = createMockStatusBarItem();

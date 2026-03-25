@@ -60,7 +60,7 @@ export const DEFAULT_SETTINGS: ActiveRecallSettings = {
     generateReferenceAnswers: true,
     generateConceptMap: true,
     customInstructions: '',
-    singleNoteOutputMode: 'same-folder',
+    singleNoteOutputMode: 'centralized',
 };
 
 /**
