@@ -25,9 +25,11 @@ Generates questions from all notes inside a selected folder. Useful when your no
 Entry points:
 - Command palette: **Generate Self-Test for Current Folder** (runs on the folder containing your open note)
 - Right-click any folder in the file explorer and select **Generate Self-Test**
-- Sidebar **Folders** tab: click Generate next to any folder
+- Sidebar **Folders** tab: click **Generate for new folder**
 
-Output: `_self-test.md` inside the folder.
+Output: `_self-test.md` inside the selected folder.
+
+![Folder mode](docs/folder_mode.gif)
 
 ### Tag mode
 
@@ -35,9 +37,11 @@ Generates questions from all notes in your vault that share a specific tag. Usef
 
 Entry points:
 - Command palette: **Generate Self-Test by Tag**
-- Sidebar **Tags** tab: click Generate next to any tag
+- Sidebar **Tags** tab: click **Generate for new tag**
 
-Output: `_self-tests/` folder in your vault root.
+Output: `_self-tests/tags/<tag_name>.md` in your vault root.
+
+![Tag mode](docs/tag_mode.gif)
 
 ### Linked Notes mode
 
@@ -45,9 +49,11 @@ Generates questions from a root note and all the notes it links to. You can opti
 
 Entry points:
 - Command palette: **Generate Self-Test from Linked Notes**
-- Sidebar **Links** tab: pick a root note
+- Sidebar **Links** tab: click **Generate from linked notes**
 
-Output: `_self-tests/` folder in your vault root.
+Output: `_self-tests/links/<root_note_name>.md` in your vault root.
+
+![Linked Notes mode](docs/links_mode.gif)
 
 ### Single Note mode
 
@@ -57,7 +63,7 @@ Entry points:
 - Command palette: **Generate Self-Test for Current Note** (runs on the note you have open)
 - Right-click any note in the file explorer and select **Generate Self-Test**
 
-Output: `{note-name}_self-test.md` in the same folder as the source note.
+Output location depends on your setting: **same folder** places `<note-name>_self-test.md` next to the source note, **centralized** places it under `_self-tests/notes/`.
 
 ## Why self-testing and active recall work
 
@@ -78,6 +84,6 @@ Each part of the generated self-test file is designed around this research:
 
 Other related plugins in the Obsidian ecosystem take a different approach: they generate questions but ask you to type full answers into text boxes, then submit them to an AI for grading and scoring. That loop - typing, waiting, reading feedback - adds friction and shifts the focus toward performance evaluation rather than the retrieval itself.
 
-Self Test works differently. Questions are meant to be answered out loud or in your head - zero typing, zero grading, pure retrieval practice. There are no scores, so the focus stays on recall rather than performance. The effort goes into the retrieval itself. The self-test also includes a concept map for orientation before you begin and questions ordered from simple to complex, with hints that cue without giving the answer away.
+Self Test works differently. Questions are meant to be open ended and answered out loud or in your head - zero typing, zero grading, pure retrieval practice. There are no scores, so the focus stays on recall rather than performance. The effort goes into the retrieval itself. The self-test also includes a concept map for orientation before you begin and questions ordered from simple to complex, with hints that cue without giving the answer away.
 
 If you prefer the typed-answer-and-grading loop, the other approaches in the ecosystem may be a better fit for your workflow.
