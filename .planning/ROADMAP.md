@@ -220,7 +220,7 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 12-01-PLAN.md - Atomic rename from "AI Active Recall" to "Self Test" across all source, test, config, CSS files + LICENSE update (Wave 1)
+- [x] 12-01-PLAN.md - Atomic rename from "AI Active Recall" to "Self Test" across all source, test, config, CSS files + LICENSE update (Wave 1)
 - [x] 12-02-PLAN.md - Rewrite README with multi-provider setup and all four generation modes (Wave 1)
 - [ ] 12-03-PLAN.md - Production build, GitHub release update, human-verify in Obsidian, store submission PR (Wave 2)
 
@@ -244,7 +244,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 9. Flexible Note Collection | 2/3 | In Progress|  |
 | 10. Sidebar Redesign | 4/4 | Complete    | 2026-03-26 |
 | 11. Sidebar Delete and Native Picker | 3/3 | Complete    | 2026-03-26 |
-| 12. v2.0 Release | 1/3 | In Progress|  |
+| 12. v2.0 Release | 2/3 | In Progress|  |
 
 ---
 

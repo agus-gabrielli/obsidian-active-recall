@@ -5,13 +5,13 @@ milestone_name: Phases
 current_phase: 12
 current_plan: 2
 status: executing
-last_updated: "2026-03-26T01:49:24.364Z"
+last_updated: "2026-03-26T01:58:17.555Z"
 last_activity: 2026-03-26
 progress:
   total_phases: 12
   completed_phases: 11
   total_plans: 32
-  completed_plans: 30
+  completed_plans: 31
 ---
 
 # Session State
@@ -28,7 +28,7 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 **Current phase:** 12
 **Current plan:** 2
 **Status:** Executing Phase 12
-**Progress bar:** [█████████░] 94% (30/32 plans complete)
+**Progress bar:** [██████████] 97% (31/32 plans complete)
 **Last activity:** 2026-03-26
 
 ## v2.0 Phase Summary
@@ -40,6 +40,11 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 | 9 - Flexible Note Collection | Generate self-tests from notes by tag, by linked notes, or single note | COL-01 through COL-07 |
 | 10 - Sidebar Redesign | Sidebar supports all four modes with clear navigation | UI-03, UI-04 |
 | 11 - v2.0 Release | README updated; store submission PR open | DIST-03, DIST-04 |
+
+## Key Architecture Decisions (from Phase 12-01 execution)
+
+- 2026-03-25 (12-01): VIEW_TYPE_SELF_TEST = 'self-test-panel' - panel ID renamed in sync with CSS namespace, consistent across manifest, sidebar, and main
+- 2026-03-25 (12-01): LICENSE copyright changed from Dynalist Inc. to Agustin Gabrielli 2025-2026 (0-BSD license preserved)
 
 ## Key Architecture Decisions (from Phase 11-03 execution)
 
@@ -195,6 +200,8 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 - 2026-03-26: Stopped at - Completed 11-02-PLAN.md
 - 2026-03-26: Executed 11-03 (build verification + human UAT) - 2 tasks (auto + human-verify), 1 fix commit (e7c0710) - 137 tests pass, 0 TS errors, 33K bundle, all 17 UAT points approved
 - 2026-03-26: Stopped at - Completed 11-03-PLAN.md (Phase 11 complete)
+- 2026-03-25: Executed 12-01 (atomic rename AI Active Recall -> Self Test) - 1 task, 1 commit (c09cc20) - 137 tests pass, 0 TS errors, all CSS/TS/config/LICENSE updated
+- 2026-03-25: Stopped at - Completed 12-01-PLAN.md
 - 2026-03-26: Executed 12-02 (README rewrite for Self Test v1.0.0) - 1 task, 1 commit (b315a04) - README fully rewritten for multi-provider + four modes, all acceptance criteria verified
 - 2026-03-26: Stopped at - Completed 12-02-PLAN.md
 
