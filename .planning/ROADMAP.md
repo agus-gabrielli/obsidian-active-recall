@@ -195,15 +195,17 @@ Plans:
 ### Phase 11: Sidebar Delete and Native Picker
 **Goal**: Users can delete self-test files directly from the sidebar via a trash icon (with confirmation), and the linked notes picker uses Obsidian's native FuzzySuggestModal for a smoother selection experience
 **Depends on**: Phase 10
-**Requirements**: TBD
+**Requirements**: DEL-01, DEL-02, PICK-01
 **Success Criteria** (what must be TRUE):
   1. Each self-test row across all sidebar tabs shows a trash icon next to Regenerate; clicking it prompts for confirmation before deleting the file
   2. After deleting a self-test, the sidebar updates immediately without manual refresh
   3. LinkedNotesPickerModal uses Obsidian's native FuzzySuggestModal for note selection, followed by a confirmation modal with depth toggle, preview count, and Generate button (two-step flow)
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] TBD
+- [ ] 11-01-PLAN.md - Add trash icon to sidebar rows, DeleteConfirmModal, FuzzySuggestModal mock, tests (Wave 1)
+- [ ] 11-02-PLAN.md - Replace LinkedNotesPickerModal with NotePickerModal + LinkConfirmModal two-step flow (Wave 2)
+- [ ] 11-03-PLAN.md - Production build and human-verify delete + native picker in Obsidian (Wave 3)
 
 ### Phase 12: v2.0 Release
 **Goal**: README documents multi-provider setup and all new collection modes clearly; the plugin passes Obsidian community store review requirements and the submission PR is open against obsidianmd/obsidian-releases
@@ -215,6 +217,9 @@ Plans:
   3. manifest.json version is bumped to 2.0.0; GitHub release tag matches exactly (no `v` prefix); all store submission checklist items pass
   4. PR is open against obsidianmd/obsidian-releases with the required files (manifest.json, main.js, styles.css) attached to the GitHub release
 **Plans**: TBD
+
+Plans:
+- [ ] TBD
 
 ---
 
@@ -235,7 +240,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 8. Multi-Provider LLM Dispatch | 2/2 | Complete | 2026-03-21 |
 | 9. Flexible Note Collection | 2/3 | In Progress|  |
 | 10. Sidebar Redesign | 4/4 | Complete    | 2026-03-26 |
-| 11. Sidebar Delete and Native Picker | 0/TBD | Not started | - |
+| 11. Sidebar Delete and Native Picker | 0/3 | Not started | - |
 | 12. v2.0 Release | 0/TBD | Not started | - |
 
 ---

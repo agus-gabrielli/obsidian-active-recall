@@ -80,6 +80,15 @@
 - [x] **UI-03**: Sidebar supports all generation modes (folder, tag, linked notes, single note) with clear navigation
 - [x] **UI-04**: Sidebar shows tag-based and link-based self-tests alongside folder-based ones
 
+### Sidebar Management
+
+- [ ] **DEL-01**: Each sidebar self-test row shows a trash icon that opens a confirmation modal before deleting the file via vault.trash
+- [ ] **DEL-02**: After deleting a self-test from the sidebar, the sidebar auto-refreshes to remove the deleted row
+
+### Picker UX
+
+- [ ] **PICK-01**: Linked notes picker uses FuzzySuggestModal (step 1: fuzzy note search) followed by a confirmation modal (step 2: depth toggle, preview count, Generate button)
+
 ### Distribution
 
 - [ ] **DIST-03**: README updated with new provider setup instructions and collection mode usage
@@ -159,15 +168,18 @@
 | COL-07 | Phase 9 | Complete |
 | UI-03 | Phase 10 | Complete |
 | UI-04 | Phase 10 | Complete |
-| DIST-03 | Phase 11 | Pending |
-| DIST-04 | Phase 11 | Pending |
+| DEL-01 | Phase 11 | Pending |
+| DEL-02 | Phase 11 | Pending |
+| PICK-01 | Phase 11 | Pending |
+| DIST-03 | Phase 12 | Pending |
+| DIST-04 | Phase 12 | Pending |
 
 **Coverage:**
 - v1 requirements: 27 total (all complete)
-- v2.0 requirements: 17 total
-- Mapped to phases: 44/44 (100%)
+- v2.0 requirements: 20 total
+- Mapped to phases: 47/47 (100%)
 - Unmapped: 0
 
 ---
 *Requirements defined: 2026-03-09*
-*Last updated: 2026-03-21 after v2.0 roadmap (phases 7-11)*
+*Last updated: 2026-03-25 after Phase 11 planning (DEL-01, DEL-02, PICK-01 added)*
