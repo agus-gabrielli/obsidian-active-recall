@@ -1,13 +1,27 @@
 import esbuild from "esbuild";
 import process from "process";
 import { builtinModules } from 'node:module';
-import { copyFileSync } from 'node:fs';
+import { copyFileSync, mkdirSync, existsSync } from 'node:fs';
 
-const copyStylesPlugin = {
-	name: 'copy-styles',
+const prod = (process.argv[2] === "production");
+
+const copyAssetsPlugin = {
+	name: 'copy-assets',
 	setup(build) {
 		build.onEnd(() => {
-			copyFileSync('styles.css', 'test-vault/.obsidian/plugins/ai-active-recall/styles.css');
+			// Ensure test-vault plugin directory exists
+			const testVaultDir = 'test-vault/.obsidian/plugins/self-test';
+			if (!existsSync(testVaultDir)) {
+				mkdirSync(testVaultDir, { recursive: true });
+			}
+			copyFileSync('styles.css', `${testVaultDir}/styles.css`);
+			copyFileSync('manifest.json', `${testVaultDir}/manifest.json`);
+			if (prod) {
+				// Copy built main.js from test-vault to repo root for GitHub releases
+				copyFileSync(`${testVaultDir}/main.js`, 'main.js');
+			} else {
+				// In dev mode, copy to test-vault only (outfile writes there directly)
+			}
 		});
 	},
 };
@@ -19,13 +33,11 @@ if you want to view the source, please visit the github repository of this plugi
 */
 `;
 
-const prod = (process.argv[2] === "production");
-
 const context = await esbuild.context({
 	banner: {
 		js: banner,
 	},
-	plugins: [copyStylesPlugin],
+	plugins: [copyAssetsPlugin],
 	entryPoints: ["src/main.ts"],
 	bundle: true,
 	external: [
@@ -48,7 +60,7 @@ const context = await esbuild.context({
 	logLevel: "info",
 	sourcemap: prod ? false : "inline",
 	treeShaking: true,
-	outfile: "test-vault/.obsidian/plugins/ai-active-recall/main.js",
+	outfile: "test-vault/.obsidian/plugins/self-test/main.js",
 	minify: prod,
 });
 
