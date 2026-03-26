@@ -91,7 +91,7 @@
 
 ### Distribution
 
-- [ ] **DIST-03**: README updated with new provider setup instructions and collection mode usage
+- [x] **DIST-03**: README updated with new provider setup instructions and collection mode usage
 - [ ] **DIST-04**: Plugin passes Obsidian community store review and PR is submitted to obsidianmd/obsidian-releases
 
 ## Future Requirements
@@ -171,7 +171,7 @@
 | DEL-01 | Phase 11 | Complete |
 | DEL-02 | Phase 11 | Complete |
 | PICK-01 | Phase 11 | Complete |
-| DIST-03 | Phase 12 | Pending |
+| DIST-03 | Phase 12 | Complete |
 | DIST-04 | Phase 12 | Pending |
 
 **Coverage:**

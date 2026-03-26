@@ -2,16 +2,16 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: Phases
-current_phase: 11
-current_plan: Not started
-status: completed
-last_updated: "2026-03-26T01:09:12.965Z"
+current_phase: 12
+current_plan: 2
+status: executing
+last_updated: "2026-03-26T01:49:24.364Z"
 last_activity: 2026-03-26
 progress:
-  total_phases: 11
+  total_phases: 12
   completed_phases: 11
-  total_plans: 29
-  completed_plans: 29
+  total_plans: 32
+  completed_plans: 30
 ---
 
 # Session State
@@ -20,15 +20,15 @@ progress:
 
 See: .planning/PROJECT.md (updated 2026-03-21)
 **Core value:** Users can generate a structured self-test from any folder of notes in one click, turning passive note review into active recall practice.
-**Current focus:** Phase 11 — sidebar-delete-and-native-picker
+**Current focus:** Phase 12 — v2-release
 
 ## Position
 
 **Milestone:** v2.0 Multi-Provider & Flexible Collection
-**Current phase:** 11
-**Current plan:** Not started
-**Status:** Milestone complete
-**Progress bar:** [██████████] 100% (29/29 plans complete)
+**Current phase:** 12
+**Current plan:** 2
+**Status:** Executing Phase 12
+**Progress bar:** [█████████░] 94% (30/32 plans complete)
 **Last activity:** 2026-03-26
 
 ## v2.0 Phase Summary
@@ -195,6 +195,8 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 - 2026-03-26: Stopped at - Completed 11-02-PLAN.md
 - 2026-03-26: Executed 11-03 (build verification + human UAT) - 2 tasks (auto + human-verify), 1 fix commit (e7c0710) - 137 tests pass, 0 TS errors, 33K bundle, all 17 UAT points approved
 - 2026-03-26: Stopped at - Completed 11-03-PLAN.md (Phase 11 complete)
+- 2026-03-26: Executed 12-02 (README rewrite for Self Test v1.0.0) - 1 task, 1 commit (b315a04) - README fully rewritten for multi-provider + four modes, all acceptance criteria verified
+- 2026-03-26: Stopped at - Completed 12-02-PLAN.md
 
 ## Accumulated Context
 
