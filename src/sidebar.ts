@@ -1,7 +1,7 @@
 import { ItemView, WorkspaceLeaf, App, TFile, TFolder, Menu, TAbstractFile, setIcon } from 'obsidian';
 import { GenerationService } from './generation';
 import type ActiveRecallPlugin from './main';
-import { TagPickerModal, LinkedNotesPickerModal, FolderPickerModal, DeleteConfirmModal } from './modals';
+import { TagPickerModal, FolderPickerModal, DeleteConfirmModal, openLinkedNotesPicker } from './modals';
 import { isSelfTestFile } from './collectors';
 
 export const VIEW_TYPE_ACTIVE_RECALL = 'active-recall-panel';
@@ -300,9 +300,9 @@ export class ActiveRecallSidebarView extends ItemView {
       cls: 'active-recall-btn active-recall-generate-new-btn',
     });
     btn.addEventListener('click', () => {
-      new LinkedNotesPickerModal(this._app, (file: TFile, depth: 1 | 2) =>
+      openLinkedNotesPicker(this._app, (file: TFile, depth: 1 | 2) =>
         this.generateForLinks(file, depth)
-      ).open();
+      );
     });
 
     // Scan _self-tests/links/ for existing link self-tests
@@ -475,9 +475,9 @@ export class ActiveRecallSidebarView extends ItemView {
     );
     if (!rootFile) {
       // Cannot find root note - open picker as fallback
-      new LinkedNotesPickerModal(this._app, (file: TFile, depth: 1 | 2) =>
+      openLinkedNotesPicker(this._app, (file: TFile, depth: 1 | 2) =>
         this.generateForLinks(file, depth)
-      ).open();
+      );
       return;
     }
     await this.generateForLinks(rootFile, 1);

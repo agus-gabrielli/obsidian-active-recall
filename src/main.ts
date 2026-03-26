@@ -2,7 +2,7 @@ import { App, Notice, Plugin, TFile } from 'obsidian';
 import { ActiveRecallSettings, DEFAULT_SETTINGS, ActiveRecallSettingTab, migrateV1Settings } from './settings';
 import { GenerationService } from './generation';
 import { VIEW_TYPE_ACTIVE_RECALL, ActiveRecallSidebarView, ActiveTab, buildActivateView, buildContextMenuHandler } from './sidebar';
-import { TagPickerModal, LinkedNotesPickerModal } from './modals';
+import { TagPickerModal, openLinkedNotesPicker } from './modals';
 import { isSelfTestFile } from './collectors';
 
 function getSidebarView(app: import('obsidian').App): ActiveRecallSidebarView | null {
@@ -113,7 +113,7 @@ export default class ActiveRecallPlugin extends Plugin {
             id: 'generate-self-test-from-links',
             name: 'Generate Self-Test from Linked Notes',
             callback: () => {
-                new LinkedNotesPickerModal(this.app, async (file: TFile, depth: 1 | 2) => {
+                openLinkedNotesPicker(this.app, async (file: TFile, depth: 1 | 2) => {
                     await openSidebarWithTab(this.app, this, 'links');
                     const sidebar = getSidebarView(this.app);
                     if (sidebar) {
@@ -122,7 +122,7 @@ export default class ActiveRecallPlugin extends Plugin {
                         await generationService.generate({ mode: 'links', rootFile: file, depth });
                         refreshSidebarIfOpen(this.app);
                     }
-                }).open();
+                });
             },
         });
 

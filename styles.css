@@ -209,3 +209,18 @@
   gap: 8px;
   margin-top: 16px;
 }
+
+.active-recall-note-suggestion {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.active-recall-note-name {
+  font-size: 0.9em;
+}
+
+.active-recall-note-path {
+  font-size: 0.75em;
+  color: var(--text-muted);
+}

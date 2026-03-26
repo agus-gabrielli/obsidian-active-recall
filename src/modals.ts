@@ -1,4 +1,4 @@
-import { App, SuggestModal, TFile, TFolder, Modal, Notice } from 'obsidian';
+import { App, SuggestModal, FuzzySuggestModal, TFile, TFolder, Modal, Notice } from 'obsidian';
 import { getAllVaultTags, collectNotesByLinks } from './collectors';
 
 export class TagPickerModal extends SuggestModal<string> {
@@ -80,122 +80,125 @@ export class FolderPickerModal extends SuggestModal<TFolder> {
     }
 }
 
-export class LinkedNotesPickerModal extends Modal {
-    private depth: 1 | 2 = 1;
-    private selectedFile: TFile | null = null;
-    private previewEl: HTMLElement;
-    private resultListEl: HTMLElement;
-    private generateBtn: HTMLButtonElement;
-    private onGenerate: (file: TFile, depth: 1 | 2) => void;
+export class NotePickerModal extends FuzzySuggestModal<TFile> {
+    private onSelect: (file: TFile) => void;
 
-    constructor(app: App, onGenerate: (file: TFile, depth: 1 | 2) => void) {
+    constructor(app: App, onSelect: (file: TFile) => void) {
         super(app);
+        this.onSelect = onSelect;
+        this.setPlaceholder('Pick a note...');
+    }
+
+    getItems(): TFile[] {
+        return this.app.vault.getFiles().filter(
+            (f: TFile) => f.extension === 'md'
+        );
+    }
+
+    getItemText(file: TFile): string {
+        return file.basename;
+    }
+
+    renderSuggestion(match: { item: TFile }, el: HTMLElement): void {
+        const file = match.item;
+        const container = el.createDiv({ cls: 'active-recall-note-suggestion' });
+        container.createDiv({ text: file.basename, cls: 'active-recall-note-name' });
+        // Per D-10: dimmed path underneath basename, matching Quick Switcher pattern
+        const parentPath = file.parent ? file.parent.path : '';
+        if (parentPath) {
+            container.createDiv({ text: parentPath, cls: 'active-recall-note-path' });
+        }
+    }
+
+    onChooseItem(file: TFile): void {
+        this.onSelect(file);
+    }
+}
+
+export class LinkConfirmModal extends Modal {
+    private rootFile: TFile;
+    private depth: 1 | 2 = 1;
+    private onGenerate: (file: TFile, depth: 1 | 2) => void;
+    private onReopen: () => void;
+
+    constructor(
+        app: App,
+        rootFile: TFile,
+        onGenerate: (file: TFile, depth: 1 | 2) => void,
+        onReopen: () => void
+    ) {
+        super(app);
+        this.rootFile = rootFile;
         this.onGenerate = onGenerate;
+        this.onReopen = onReopen;
     }
 
     onOpen(): void {
         const { contentEl } = this;
         contentEl.empty();
-        contentEl.createEl('h3', { text: 'Generate Self-Test from Linked Notes' });
+        contentEl.createEl('h3', { text: 'Generate from linked notes' });
+        contentEl.createEl('p', { text: `Root note: ${this.rootFile.basename}` });
 
-        // Search input (D-05: type to search across all vault notes)
-        const searchInput = contentEl.createEl('input', {
-            type: 'text',
-            placeholder: 'Search notes...',
-            cls: 'active-recall-link-search',
-        });
-        searchInput.style.width = '100%';
-        searchInput.style.marginBottom = '8px';
+        // Per D-12: check for zero links before showing full UI
+        const outgoing = (this.app as App).metadataCache.resolvedLinks[this.rootFile.path] ?? {};
+        const hasOutgoing = Object.keys(outgoing).length > 0;
+        const hasBacklinks = Object.values((this.app as App).metadataCache.resolvedLinks)
+            .some(dests => this.rootFile.path in dests);
 
-        // Result list
-        this.resultListEl = contentEl.createDiv({ cls: 'active-recall-link-results' });
-        this.resultListEl.style.maxHeight = '200px';
-        this.resultListEl.style.overflowY = 'auto';
-        this.resultListEl.style.marginBottom = '8px';
+        if (!hasOutgoing && !hasBacklinks) {
+            new Notice('This note has no linked notes. Try a different note.');
+            this.close();
+            // Loop back to step 1
+            this.onReopen();
+            return;
+        }
 
-        // Depth-2 checkbox (D-06)
+        // Depth toggle
         const checkboxContainer = contentEl.createDiv({ cls: 'active-recall-depth-toggle' });
         const checkbox = checkboxContainer.createEl('input', { type: 'checkbox' });
         checkbox.id = 'depth-2-toggle';
         const label = checkboxContainer.createEl('label', { text: ' Include links of links (depth 2)' });
         label.setAttribute('for', 'depth-2-toggle');
+
+        // Preview count
+        const previewEl = contentEl.createEl('p', { cls: 'active-recall-link-preview' });
+        const updatePreview = () => {
+            const collected = collectNotesByLinks(this.app as App, this.rootFile, this.depth);
+            previewEl.setText(`${collected.length} note${collected.length === 1 ? '' : 's'} will be collected.`);
+        };
+        updatePreview();
+
         checkbox.addEventListener('change', () => {
             this.depth = checkbox.checked ? 2 : 1;
-            this.updatePreview();
+            updatePreview();
         });
 
-        // Preview count (D-08)
-        this.previewEl = contentEl.createEl('p', {
-            text: 'Select a note above.',
-            cls: 'active-recall-link-preview',
-        });
-
-        // Generate button (disabled until selection)
-        this.generateBtn = contentEl.createEl('button', {
+        // Generate button
+        const generateBtn = contentEl.createEl('button', {
             text: 'Generate',
             cls: 'mod-cta active-recall-generate-btn',
         });
-        this.generateBtn.disabled = true;
-        this.generateBtn.addEventListener('click', () => {
-            if (!this.selectedFile) return;
-            // D-07: If no outgoing links or backlinks, show notice and abort
-            const outgoing = (this.app as App).metadataCache.resolvedLinks[this.selectedFile.path] ?? {};
-            const hasOutgoing = Object.keys(outgoing).length > 0;
-            const hasBacklinks = Object.values((this.app as App).metadataCache.resolvedLinks)
-                .some(dests => this.selectedFile!.path in dests);
-            if (!hasOutgoing && !hasBacklinks) {
-                new Notice('This note has no linked notes. Try a different note.');
-                return;
-            }
-            this.onGenerate(this.selectedFile, this.depth);
+        generateBtn.addEventListener('click', () => {
+            this.onGenerate(this.rootFile, this.depth);
             this.close();
         });
-
-        // Wire up search
-        searchInput.addEventListener('input', () => {
-            this.renderResults(searchInput.value);
-        });
-
-        // Initial render: show all notes
-        this.renderResults('');
-        searchInput.focus();
-    }
-
-    private renderResults(query: string): void {
-        this.resultListEl.empty();
-        const q = query.toLowerCase();
-        const files = (this.app as App).vault.getFiles()
-            .filter((f: TFile) => f.extension === 'md')
-            .filter((f: TFile) => !q || f.basename.toLowerCase().includes(q))
-            .slice(0, 50); // Cap at 50 results for performance
-
-        for (const file of files) {
-            const row = this.resultListEl.createDiv({ cls: 'active-recall-link-result-row' });
-            row.createSpan({ text: file.basename });
-            row.createSpan({ text: ` - ${file.path}`, cls: 'active-recall-link-path' });
-            row.addEventListener('click', () => {
-                // Deselect previous
-                this.resultListEl.querySelectorAll('.is-selected').forEach(el => el.removeClass('is-selected'));
-                row.addClass('is-selected');
-                this.selectedFile = file;
-                this.generateBtn.disabled = false;
-                this.updatePreview();
-            });
-        }
-    }
-
-    private updatePreview(): void {
-        if (!this.selectedFile) {
-            this.previewEl.setText('Select a note above.');
-            return;
-        }
-        const collected = collectNotesByLinks(this.app as App, this.selectedFile, this.depth);
-        this.previewEl.setText(`${collected.length} note${collected.length === 1 ? '' : 's'} will be collected.`);
     }
 
     onClose(): void {
         this.contentEl.empty();
     }
+}
+
+export function openLinkedNotesPicker(
+    app: App,
+    onGenerate: (file: TFile, depth: 1 | 2) => void
+): void {
+    const picker = new NotePickerModal(app, (file: TFile) => {
+        new LinkConfirmModal(app, file, onGenerate, () => {
+            openLinkedNotesPicker(app, onGenerate);
+        }).open();
+    });
+    picker.open();
 }
 
 export class DeleteConfirmModal extends Modal {
