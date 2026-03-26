@@ -35,7 +35,7 @@ export function buildConceptMapInstruction(enabled: boolean): string {
     if (!enabled) return '';
     return `## Concept Map
 
-Create a Mermaid mindmap diagram showing the key concepts and their relationships.
+Start your output with exactly the heading "## Concept Map" followed by a Mermaid mindmap diagram showing the key concepts and their relationships.
 Use this exact syntax:
 
 \`\`\`mermaid

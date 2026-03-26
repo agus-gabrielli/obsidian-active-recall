@@ -105,7 +105,7 @@ export class NotePickerModal extends FuzzySuggestModal<TFile> {
         container.createDiv({ text: file.basename, cls: 'active-recall-note-name' });
         // Per D-10: dimmed path underneath basename, matching Quick Switcher pattern
         const parentPath = file.parent ? file.parent.path : '';
-        if (parentPath) {
+        if (parentPath && parentPath !== '/') {
             container.createDiv({ text: parentPath, cls: 'active-recall-note-path' });
         }
     }
