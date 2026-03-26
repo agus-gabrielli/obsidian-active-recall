@@ -7,9 +7,9 @@ import { isSelfTestFile } from './collectors';
 
 function getSidebarView(app: import('obsidian').App): SelfTestSidebarView | null {
     const leaves = app.workspace.getLeavesOfType(VIEW_TYPE_SELF_TEST);
-    if (leaves.length > 0) {
-        const view = leaves[0]?.view as SelfTestSidebarView | undefined;
-        if (view && typeof view.refresh === 'function') return view;
+    const leaf = leaves[0];
+    if (leaf && leaf.view instanceof SelfTestSidebarView) {
+        return leaf.view;
     }
     return null;
 }
@@ -46,9 +46,9 @@ export default class SelfTestPlugin extends Plugin {
         const activateView = buildActivateView(this.app);
 
         this.addCommand({
-            id: 'open-self-test-panel',
-            name: 'Open self test panel',
-            callback: () => activateView(),
+            id: 'open-panel',
+            name: 'Open panel',
+            callback: () => { void activateView(); },
         });
 
         this.registerEvent(
@@ -67,13 +67,13 @@ export default class SelfTestPlugin extends Plugin {
             )
         );
 
-        this.addRibbonIcon('brain-circuit', 'Open self test panel', () => {
-            activateView();
+        this.addRibbonIcon('brain-circuit', 'Open panel', () => {
+            void activateView();
         });
 
         this.addCommand({
-            id: 'generate-self-test',
-            name: 'Generate self-test for current folder',
+            id: 'generate-folder',
+            name: 'Generate for current folder',
             callback: async () => {
                 const activeFile = this.app.workspace.getActiveFile();
                 if (!activeFile) {
@@ -93,42 +93,46 @@ export default class SelfTestPlugin extends Plugin {
         });
 
         this.addCommand({
-            id: 'generate-self-test-by-tag',
-            name: 'Generate self-test by tag',
+            id: 'generate-by-tag',
+            name: 'Generate by tag',
             callback: () => {
-                new TagPickerModal(this.app, async (tag: string) => {
-                    await openSidebarWithTab(this.app, this, 'tags');
-                    const sidebar = getSidebarView(this.app);
-                    if (sidebar) {
-                        await sidebar.generateForTag(tag);
-                    } else {
-                        await generationService.generate({ mode: 'tag', tag });
-                        refreshSidebarIfOpen(this.app);
-                    }
+                new TagPickerModal(this.app, (tag: string) => {
+                    void (async () => {
+                        await openSidebarWithTab(this.app, this, 'tags');
+                        const sidebar = getSidebarView(this.app);
+                        if (sidebar) {
+                            await sidebar.generateForTag(tag);
+                        } else {
+                            await generationService.generate({ mode: 'tag', tag });
+                            refreshSidebarIfOpen(this.app);
+                        }
+                    })();
                 }).open();
             },
         });
 
         this.addCommand({
-            id: 'generate-self-test-from-links',
-            name: 'Generate self-test from linked notes',
+            id: 'generate-from-links',
+            name: 'Generate from linked notes',
             callback: () => {
-                openLinkedNotesPicker(this.app, async (file: TFile, depth: 1 | 2) => {
-                    await openSidebarWithTab(this.app, this, 'links');
-                    const sidebar = getSidebarView(this.app);
-                    if (sidebar) {
-                        await sidebar.generateForLinks(file, depth);
-                    } else {
-                        await generationService.generate({ mode: 'links', rootFile: file, depth });
-                        refreshSidebarIfOpen(this.app);
-                    }
+                openLinkedNotesPicker(this.app, (file: TFile, depth: 1 | 2) => {
+                    void (async () => {
+                        await openSidebarWithTab(this.app, this, 'links');
+                        const sidebar = getSidebarView(this.app);
+                        if (sidebar) {
+                            await sidebar.generateForLinks(file, depth);
+                        } else {
+                            await generationService.generate({ mode: 'links', rootFile: file, depth });
+                            refreshSidebarIfOpen(this.app);
+                        }
+                    })();
                 });
             },
         });
 
         this.addCommand({
-            id: 'generate-self-test-for-note',
-            name: 'Generate self-test for current note',
+            id: 'generate-for-note',
+            name: 'Generate for current note',
             callback: async () => {
                 const activeFile = this.app.workspace.getActiveFile();
                 if (!activeFile) {
@@ -154,9 +158,11 @@ export default class SelfTestPlugin extends Plugin {
                     item
                         .setTitle('Generate self-test')
                         .setIcon('brain-circuit')
-                        .onClick(async () => {
-                            await generationService.generate({ mode: 'note', file });
-                            refreshSidebarIfOpen(this.app);
+                        .onClick(() => {
+                            void (async () => {
+                                await generationService.generate({ mode: 'note', file });
+                                refreshSidebarIfOpen(this.app);
+                            })();
                         })
                 );
             })
@@ -179,9 +185,7 @@ export default class SelfTestPlugin extends Plugin {
         );
     }
 
-    onunload() {
-        this.app.workspace.detachLeavesOfType(VIEW_TYPE_SELF_TEST);
-    }
+    // onunload intentionally empty - Obsidian manages leaf lifecycle
 
     async loadSettings() {
         const savedData = ((await this.loadData()) ?? {}) as Record<string, unknown>;

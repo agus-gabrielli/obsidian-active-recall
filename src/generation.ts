@@ -136,6 +136,19 @@ export function postProcessLLMOutput(text: string): string {
     return result;
 }
 
+interface OpenAIResponse {
+    choices?: Array<{ message?: { content?: string }; finish_reason?: string }>;
+}
+
+interface GeminiResponse {
+    candidates?: Array<{ content?: { parts?: Array<{ text?: string }> }; finishReason?: string }>;
+}
+
+interface AnthropicResponse {
+    content?: Array<{ text?: string }>;
+    stop_reason?: string;
+}
+
 export class LLMError extends Error {
     constructor(public status: number, public apiError: unknown) {
         super(`LLM API error: status ${status}`);
@@ -177,12 +190,13 @@ async function callOpenAI(
     });
 
     if (response.status !== 200) {
-        throw new LLMError(response.status, response.json);
+        throw new LLMError(response.status, response.json as unknown);
     }
 
-    const content = response.json?.choices?.[0]?.message?.content;
+    const data = response.json as OpenAIResponse;
+    const content = data.choices?.[0]?.message?.content;
 
-    if (response.json?.choices?.[0]?.finish_reason === 'length') {
+    if (data.choices?.[0]?.finish_reason === 'length') {
         new Notice('Warning: response may be truncated due to token limit.');
     }
 
@@ -221,17 +235,18 @@ async function callGemini(
     });
 
     if (response.status !== 200) {
-        throw new LLMError(response.status, response.json);
+        throw new LLMError(response.status, response.json as unknown);
     }
 
-    const candidate = response.json?.candidates?.[0];
+    const data = response.json as GeminiResponse;
+    const candidate = data.candidates?.[0];
     if (!candidate) {
         new Notice('Gemini blocked this content due to safety filters.');
         throw new Error('Gemini safety block');
     }
 
-    const content = candidate?.content?.parts?.[0]?.text;
-    if (candidate?.finishReason === 'MAX_TOKENS') {
+    const content = candidate.content?.parts?.[0]?.text;
+    if (candidate.finishReason === 'MAX_TOKENS') {
         new Notice('Warning: response may be truncated due to token limit.');
     }
     if (!content) {
@@ -270,11 +285,12 @@ async function callAnthropic(
     });
 
     if (response.status !== 200) {
-        throw new LLMError(response.status, response.json);
+        throw new LLMError(response.status, response.json as unknown);
     }
 
-    const content = response.json?.content?.[0]?.text;
-    if (response.json?.stop_reason === 'max_tokens') {
+    const data = response.json as AnthropicResponse;
+    const content = data.content?.[0]?.text;
+    if (data.stop_reason === 'max_tokens') {
         new Notice('Warning: response may be truncated due to token limit.');
     }
     if (!content) {
@@ -368,14 +384,14 @@ export class GenerationService {
             let finalContent: string;
 
             if (batches.length === 1) {
-                const userMessage = buildBatchPrompt(batches[0]!, this.settings);
+                const userMessage = buildBatchPrompt(batches[0] as NoteSource[], this.settings);
                 const messages = buildMessages(SYSTEM_MESSAGE, userMessage);
                 finalContent = await callLLM(this.settings.provider, providerCfg.apiKey, providerCfg.model, messages);
             } else {
                 const partialOutputs: string[] = [];
                 for (let i = 0; i < batches.length; i++) {
                     this.statusBarItem.setText(`Generating self-test... (batch ${i + 1}/${batches.length})`);
-                    const userMessage = buildBatchPrompt(batches[i]!, this.settings);
+                    const userMessage = buildBatchPrompt(batches[i] as NoteSource[], this.settings);
                     const messages = buildMessages(SYSTEM_MESSAGE, userMessage);
                     const partial = await callLLM(this.settings.provider, providerCfg.apiKey, providerCfg.model, messages);
                     partialOutputs.push(partial);

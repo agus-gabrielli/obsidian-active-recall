@@ -30,7 +30,8 @@ export class TagPickerModal extends SuggestModal<string> {
 
     renderSuggestion(tag: string, el: HTMLElement): void {
         const depth = tag.split('/').length - 1;
-        const displayName = depth > 0 ? tag.split('/').pop()! : tag;
+        const parts = tag.split('/');
+        const displayName = depth > 0 ? (parts[parts.length - 1] ?? tag) : tag;
         const container = el.createDiv({ cls: 'self-test-tag-suggestion' });
         if (depth > 0) {
             container.style.paddingLeft = `${depth * 16}px`;
@@ -54,7 +55,7 @@ export class FolderPickerModal extends SuggestModal<TFolder> {
         this.onSelect = onSelect;
         this.setPlaceholder('Search folders...');
         // Eligible folders: have at least one non-self-test .md file
-        this.folders = (app as App).vault.getAllFolders(false).filter((folder: TFolder) => {
+        this.folders = app.vault.getAllFolders(false).filter((folder: TFolder) => {
             if (folder.path === '_self-tests' || folder.path.startsWith('_self-tests/')) return false;
             return folder.children.some(
                 (child) =>
@@ -140,9 +141,9 @@ export class LinkConfirmModal extends Modal {
         contentEl.createEl('p', { text: `Root note: ${this.rootFile.basename}` });
 
         // Per D-12: check for zero links before showing full UI
-        const outgoing = (this.app as App).metadataCache.resolvedLinks[this.rootFile.path] ?? {};
+        const outgoing = this.app.metadataCache.resolvedLinks[this.rootFile.path] ?? {};
         const hasOutgoing = Object.keys(outgoing).length > 0;
-        const hasBacklinks = Object.values((this.app as App).metadataCache.resolvedLinks)
+        const hasBacklinks = Object.values(this.app.metadataCache.resolvedLinks)
             .some(dests => this.rootFile.path in dests);
 
         if (!hasOutgoing && !hasBacklinks) {
@@ -163,7 +164,7 @@ export class LinkConfirmModal extends Modal {
         // Preview count
         const previewEl = contentEl.createEl('p', { cls: 'self-test-link-preview' });
         const updatePreview = () => {
-            const collected = collectNotesByLinks(this.app as App, this.rootFile, this.depth);
+            const collected = collectNotesByLinks(this.app, this.rootFile, this.depth);
             previewEl.setText(`${collected.length} note${collected.length === 1 ? '' : 's'} will be collected.`);
         };
         updatePreview();

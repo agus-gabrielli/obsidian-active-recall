@@ -34,11 +34,11 @@ export function getFolderStatuses(app: App): FolderStatus[] {
 
     if (!hasEligibleNote) continue;
 
-    const selfTestFile =
-      (folder.children.find(
-        (child) =>
-          child instanceof TFile && child.basename === '_self-test'
-      ) as TFile) ?? null;
+    const found = folder.children.find(
+      (child) =>
+        child instanceof TFile && child.basename === '_self-test'
+    );
+    const selfTestFile = found instanceof TFile ? found : null;
 
     result.push({ folder, selfTestFile });
   }
@@ -61,15 +61,15 @@ export function getLastGeneratedDate(file: { stat: { mtime: number } }): string 
 export function buildActivateView(app: App): () => Promise<void> {
   return async () => {
     const existing = app.workspace.getLeavesOfType(VIEW_TYPE_SELF_TEST);
-    if (existing.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      app.workspace.revealLeaf(existing[0]!);
+    const first = existing[0];
+    if (first) {
+      void app.workspace.revealLeaf(first);
       return;
     }
     const leaf = app.workspace.getRightLeaf(false);
     if (!leaf) return;
     await leaf.setViewState({ type: VIEW_TYPE_SELF_TEST, active: true });
-    app.workspace.revealLeaf(leaf);
+    void app.workspace.revealLeaf(leaf);
   };
 }
 
@@ -91,18 +91,17 @@ export function buildContextMenuHandler(
       item
         .setTitle('Generate self-test')
         .setIcon('brain-circuit')
-        .onClick(async () => {
-          await generate(file.path);
-          if (app && viewType) {
-            const leaves = app.workspace.getLeavesOfType(viewType);
-            if (leaves.length > 0) {
-              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              const view = leaves[0]!.view as SelfTestSidebarView | null;
-              if (view && typeof view.refresh === 'function') {
-                view.refresh();
+        .onClick(() => {
+          void (async () => {
+            await generate(file.path);
+            if (app && viewType) {
+              const leaves = app.workspace.getLeavesOfType(viewType);
+              const leaf = leaves[0];
+              if (leaf && leaf.view instanceof SelfTestSidebarView) {
+                leaf.view.refresh();
               }
             }
-          }
+          })();
         })
     );
   };
@@ -129,7 +128,7 @@ export class SelfTestSidebarView extends ItemView {
   }
 
   getDisplayText(): string {
-    return 'Self Test';
+    return 'Self test';
   }
 
   getIcon(): string {
@@ -159,7 +158,7 @@ export class SelfTestSidebarView extends ItemView {
 
     // Fixed header
     const header = container.createDiv({ cls: 'self-test-header' });
-    header.createEl('h3', { text: 'Self Test', cls: 'self-test-title' });
+    header.createEl('h3', { text: 'Self test', cls: 'self-test-title' });
     header.createEl('p', { text: 'Generate and review your self-tests.', cls: 'self-test-description' });
 
     // Tab bar - three text tabs
@@ -174,7 +173,7 @@ export class SelfTestSidebarView extends ItemView {
       });
       btn.addEventListener('click', () => {
         this.activeTab = tab;
-        this.saveActiveTab();
+        void this.saveActiveTab();
         this.refresh();
       });
     }
@@ -193,7 +192,7 @@ export class SelfTestSidebarView extends ItemView {
       cls: 'self-test-btn self-test-generate-new-btn',
     });
     newBtn.addEventListener('click', () => {
-      new FolderPickerModal(this._app, (folderPath: string) => this.generateForFolder(folderPath)).open();
+      new FolderPickerModal(this._app, (folderPath: string) => { void this.generateForFolder(folderPath); }).open();
     });
 
     const statuses = getFolderStatuses(this._app);
@@ -221,18 +220,19 @@ export class SelfTestSidebarView extends ItemView {
 
     // Placeholder rows for folders being generated that have no self-test yet
     for (const folderPath of generatingAndNew) {
-      this.renderSelfTestRow(section, folderPath, null, null, true, () => this.generateForFolder(folderPath), null);
+      this.renderSelfTestRow(section, folderPath, null, null, true, () => { void this.generateForFolder(folderPath); }, null);
     }
 
     for (const status of withSelfTest) {
+      const stFile = status.selfTestFile;
       this.renderSelfTestRow(
         section,
         status.folder.path,
-        status.selfTestFile ? getLastGeneratedDate(status.selfTestFile) : null,
-        status.selfTestFile,
+        stFile ? getLastGeneratedDate(stFile) : null,
+        stFile,
         this.generationService.generatingFolders.has(status.folder.path),
-        () => this.generateForFolder(status.folder.path),
-        status.selfTestFile ? () => this.deleteSelfTest(status.selfTestFile!) : null
+        () => { void this.generateForFolder(status.folder.path); },
+        stFile ? () => this.deleteSelfTest(stFile) : null
       );
     }
   }
@@ -244,7 +244,7 @@ export class SelfTestSidebarView extends ItemView {
       cls: 'self-test-btn self-test-generate-new-btn',
     });
     btn.addEventListener('click', () => {
-      new TagPickerModal(this._app, (tag: string) => this.generateForTag(tag)).open();
+      new TagPickerModal(this._app, (tag: string) => { void this.generateForTag(tag); }).open();
     });
 
     // Scan _self-tests/tags/ for existing tag self-tests
@@ -275,7 +275,7 @@ export class SelfTestSidebarView extends ItemView {
 
     // Placeholder rows for tags being generated with no file yet
     for (const tag of generatingAndNew) {
-      this.renderSelfTestRow(section, tag, null, null, true, () => this.generateForTag(tag), null);
+      this.renderSelfTestRow(section, tag, null, null, true, () => { void this.generateForTag(tag); }, null);
     }
 
     for (const file of tagFiles) {
@@ -287,7 +287,7 @@ export class SelfTestSidebarView extends ItemView {
         getLastGeneratedDate(file),
         file,
         this.generationService.generatingTags.has(tagName),
-        () => this.generateForTag(tagName),
+        () => { void this.generateForTag(tagName); },
         () => this.deleteSelfTest(file)
       );
     }
@@ -300,9 +300,9 @@ export class SelfTestSidebarView extends ItemView {
       cls: 'self-test-btn self-test-generate-new-btn',
     });
     btn.addEventListener('click', () => {
-      openLinkedNotesPicker(this._app, (file: TFile, depth: 1 | 2) =>
-        this.generateForLinks(file, depth)
-      );
+      openLinkedNotesPicker(this._app, (file: TFile, depth: 1 | 2) => {
+        void this.generateForLinks(file, depth);
+      });
     });
 
     // Scan _self-tests/links/ for existing link self-tests
@@ -341,7 +341,7 @@ export class SelfTestSidebarView extends ItemView {
         getLastGeneratedDate(file),
         file,
         this.generationService.generatingLinks.has(file.basename),
-        () => this.regenerateForLinks(file),
+        () => { void this.regenerateForLinks(file); },
         () => this.deleteSelfTest(file)
       );
     }
@@ -368,7 +368,7 @@ export class SelfTestSidebarView extends ItemView {
       row.addClass('self-test-row--clickable');
       row.addEventListener('click', (evt: MouseEvent) => {
         if ((evt.target as HTMLElement).closest('button')) return;
-        this._app.workspace.openLinkText(file.path, '', false);
+        void this._app.workspace.openLinkText(file.path, '', false);
       });
     }
 
@@ -396,9 +396,11 @@ export class SelfTestSidebarView extends ItemView {
   }
 
   private deleteSelfTest(file: TFile): void {
-    new DeleteConfirmModal(this._app, file.path, async () => {
-      await this._app.vault.trash(file, true);
-      this.refresh();
+    new DeleteConfirmModal(this._app, file.path, () => {
+      void (async () => {
+        await this._app.fileManager.trashFile(file);
+        this.refresh();
+      })();
     }).open();
   }
 
@@ -475,9 +477,9 @@ export class SelfTestSidebarView extends ItemView {
     );
     if (!rootFile) {
       // Cannot find root note - open picker as fallback
-      openLinkedNotesPicker(this._app, (file: TFile, depth: 1 | 2) =>
-        this.generateForLinks(file, depth)
-      );
+      openLinkedNotesPicker(this._app, (file: TFile, depth: 1 | 2) => {
+        void this.generateForLinks(file, depth);
+      });
       return;
     }
     await this.generateForLinks(rootFile, 1);

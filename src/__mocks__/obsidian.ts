@@ -129,6 +129,9 @@ export function createMockApp() {
       createFolder: jest.fn().mockResolvedValue(undefined),
       trash: jest.fn().mockResolvedValue(undefined),
     },
+    fileManager: {
+      trashFile: jest.fn().mockResolvedValue(undefined),
+    },
     workspace: {
       getLeavesOfType: jest.fn().mockReturnValue([]),
       getRightLeaf: jest.fn(),
