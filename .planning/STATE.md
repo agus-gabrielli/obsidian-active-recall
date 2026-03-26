@@ -5,13 +5,13 @@ milestone_name: Phases
 current_phase: 11
 current_plan: 2
 status: executing
-last_updated: "2026-03-25T00:20:00.000Z"
-last_activity: 2026-03-25
+last_updated: "2026-03-26T00:47:40.825Z"
+last_activity: 2026-03-26
 progress:
   total_phases: 11
   completed_phases: 10
   total_plans: 29
-  completed_plans: 27
+  completed_plans: 28
 ---
 
 # Session State
@@ -26,9 +26,9 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Milestone:** v2.0 Multi-Provider & Flexible Collection
 **Current phase:** 11
-**Current plan:** 1
+**Current plan:** 2
 **Status:** Executing Phase 11
-**Progress bar:** [█████████░] 93% (27/29 plans complete)
+**Progress bar:** [██████████] 97% (28/29 plans complete)
 **Last activity:** 2026-03-26
 
 ## v2.0 Phase Summary
@@ -40,6 +40,12 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 | 9 - Flexible Note Collection | Generate self-tests from notes by tag, by linked notes, or single note | COL-01 through COL-07 |
 | 10 - Sidebar Redesign | Sidebar supports all four modes with clear navigation | UI-03, UI-04 |
 | 11 - v2.0 Release | README updated; store submission PR open | DIST-03, DIST-04 |
+
+## Key Architecture Decisions (from Phase 11-02 execution)
+
+- 2026-03-26 (11-02): NotePickerModal uses FuzzySuggestModal<TFile> with getItemText returning basename - built-in fuzzy matching operates on note names
+- 2026-03-26 (11-02): LinkConfirmModal checks zero-links in onOpen() before rendering UI, closes self and calls onReopen() for clean step-1 loop-back per D-12
+- 2026-03-26 (11-02): openLinkedNotesPicker exported helper encapsulates NotePickerModal->LinkConfirmModal two-step flow - all call sites use one function call
 
 ## Key Architecture Decisions (from Phase 11-01 execution)
 
@@ -180,6 +186,8 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 - 2026-03-25: Executed 10-04 (sidebar UX polish from human-verify feedback) - 1 auto task (d058403), checkpoint reached for human verification - 134 tests pass, 0 TS errors
 - 2026-03-25: Executed 11-01 (trash icon + DeleteConfirmModal + FuzzySuggestModal mock + frontmatter cleanup) - 1 task, 1 commit (eb7fa9f) - 137 tests pass, 0 TS errors
 - 2026-03-25: Stopped at - Completed 11-01-PLAN.md
+- 2026-03-26: Executed 11-02 (NotePickerModal + LinkConfirmModal two-step picker, replace LinkedNotesPickerModal) - 1 task, 1 commit (27780c8) - 137 tests pass, 0 TS errors
+- 2026-03-26: Stopped at - Completed 11-02-PLAN.md
 
 ## Accumulated Context
 

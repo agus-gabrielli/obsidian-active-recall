@@ -87,7 +87,7 @@
 
 ### Picker UX
 
-- [ ] **PICK-01**: Linked notes picker uses FuzzySuggestModal (step 1: fuzzy note search) followed by a confirmation modal (step 2: depth toggle, preview count, Generate button)
+- [x] **PICK-01**: Linked notes picker uses FuzzySuggestModal (step 1: fuzzy note search) followed by a confirmation modal (step 2: depth toggle, preview count, Generate button)
 
 ### Distribution
 
@@ -170,7 +170,7 @@
 | UI-04 | Phase 10 | Complete |
 | DEL-01 | Phase 11 | Complete |
 | DEL-02 | Phase 11 | Complete |
-| PICK-01 | Phase 11 | Pending |
+| PICK-01 | Phase 11 | Complete |
 | DIST-03 | Phase 12 | Pending |
 | DIST-04 | Phase 12 | Pending |
 
