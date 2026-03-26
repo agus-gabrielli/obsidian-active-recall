@@ -14,7 +14,7 @@ requires:
 provides:
   - GitHub release at tag 1.0.0 with main.js, manifest.json, styles.css
   - isDesktopOnly: true set in manifest.json (desktop-safe default for v1)
-  - Store submission PR (pending Task 3 - human-action)
+  - Store submission PR: intentionally deferred - will be handled in a future final-release phase after plugin improvements
 
 affects: []
 
@@ -51,8 +51,8 @@ completed: 2026-03-17
 
 - **Duration:** ~15 min
 - **Started:** 2026-03-17T21:35:00Z
-- **Completed:** 2026-03-17T21:50:00Z (Tasks 1-2; Task 3 awaiting human action)
-- **Tasks:** 2 of 3 complete (Task 3 is a human-action checkpoint)
+- **Completed:** 2026-03-17T21:50:00Z (Tasks 1-2 complete; Task 3 deferred by decision)
+- **Tasks:** 2 of 3 executed; Task 3 intentionally deferred to a future final-release phase
 - **Files modified:** 1 (manifest.json)
 
 ## Accomplishments
@@ -96,15 +96,17 @@ completed: 2026-03-17
 
 - `gh` CLI not installed on machine - resolved by using GitHub REST API via curl with PAT retrieved from macOS Keychain via `git credential fill`
 
-## User Setup Required
+## Task 3 Deferral
 
-Task 3 is a checkpoint:human-action - user must open the store submission PR manually via the GitHub web UI. See checkpoint return below.
+Task 3 (store submission PR) was intentionally not executed. Before submitting to the Obsidian community store, the user decided to improve the plugin further. The store submission will be handled in a dedicated final-release phase after those improvements are complete.
+
+The existing GitHub release 1.0.0 will need to be deleted and recreated after improvements are built, since assets will change.
 
 ## Next Phase Readiness
 
-- GitHub release 1.0.0 is live at https://github.com/agus-gabrielli/obsidian-active-recall/releases/tag/1.0.0
+- GitHub release 1.0.0 is live (will be replaced after improvements)
 - LICENSE file confirmed present at repo root
-- Awaiting store submission PR URL from user to close out Phase 05
+- Store submission deferred to future final-release phase
 
 ## Self-Check: PASSED
 
@@ -114,4 +116,4 @@ Task 3 is a checkpoint:human-action - user must open the store submission PR man
 
 ---
 *Phase: 05-polish-and-release*
-*Completed: 2026-03-17 (partial - Task 3 pending)*
+*Closed: 2026-03-17 (Task 3 deferred by decision - store submission moved to future phase)*

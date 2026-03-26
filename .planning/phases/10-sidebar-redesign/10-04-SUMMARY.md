@@ -106,6 +106,15 @@ None.
 - Task 2 (checkpoint:human-verify) requires human verification in Obsidian before closing this plan
 - After human verify, Phase 10 is fully complete and Phase 11 (v2.0 Release) can begin
 
+## Self-Check: PASSED
+
+- FOUND: .planning/phases/10-sidebar-redesign/10-04-SUMMARY.md
+- FOUND: src/modals.ts (FolderPickerModal)
+- FOUND: src/sidebar.ts (generating banner, rewritten panels)
+- FOUND: src/main.ts (openSidebarWithTab)
+- FOUND: styles.css (.active-recall-generating-banner)
+- FOUND: commit d058403
+
 ---
 *Phase: 10-sidebar-redesign*
 *Completed: 2026-03-25*
