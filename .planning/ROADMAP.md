@@ -244,7 +244,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 9. Flexible Note Collection | 2/3 | In Progress|  |
 | 10. Sidebar Redesign | 4/4 | Complete    | 2026-03-26 |
 | 11. Sidebar Delete and Native Picker | 3/3 | Complete    | 2026-03-26 |
-| 12. v2.0 Release | 3/3 | Complete   | 2026-03-26 |
+| 12. v2.0 Release | 3/3 | Complete    | 2026-03-26 |
 
 ---
 
