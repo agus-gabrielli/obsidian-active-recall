@@ -47,7 +47,7 @@ export default class SelfTestPlugin extends Plugin {
 
         this.addCommand({
             id: 'open-self-test-panel',
-            name: 'Open Self Test Panel',
+            name: 'Open self test panel',
             callback: () => activateView(),
         });
 
@@ -67,13 +67,13 @@ export default class SelfTestPlugin extends Plugin {
             )
         );
 
-        this.addRibbonIcon('brain-circuit', 'Open Self Test Panel', () => {
+        this.addRibbonIcon('brain-circuit', 'Open self test panel', () => {
             activateView();
         });
 
         this.addCommand({
             id: 'generate-self-test',
-            name: 'Generate Self-Test for Current Folder',
+            name: 'Generate self-test for current folder',
             callback: async () => {
                 const activeFile = this.app.workspace.getActiveFile();
                 if (!activeFile) {
@@ -94,7 +94,7 @@ export default class SelfTestPlugin extends Plugin {
 
         this.addCommand({
             id: 'generate-self-test-by-tag',
-            name: 'Generate Self-Test by Tag',
+            name: 'Generate self-test by tag',
             callback: () => {
                 new TagPickerModal(this.app, async (tag: string) => {
                     await openSidebarWithTab(this.app, this, 'tags');
@@ -111,7 +111,7 @@ export default class SelfTestPlugin extends Plugin {
 
         this.addCommand({
             id: 'generate-self-test-from-links',
-            name: 'Generate Self-Test from Linked Notes',
+            name: 'Generate self-test from linked notes',
             callback: () => {
                 openLinkedNotesPicker(this.app, async (file: TFile, depth: 1 | 2) => {
                     await openSidebarWithTab(this.app, this, 'links');
@@ -128,7 +128,7 @@ export default class SelfTestPlugin extends Plugin {
 
         this.addCommand({
             id: 'generate-self-test-for-note',
-            name: 'Generate Self-Test for Current Note',
+            name: 'Generate self-test for current note',
             callback: async () => {
                 const activeFile = this.app.workspace.getActiveFile();
                 if (!activeFile) {
@@ -152,7 +152,7 @@ export default class SelfTestPlugin extends Plugin {
 
                 menu.addItem(item =>
                     item
-                        .setTitle('Generate Self-Test')
+                        .setTitle('Generate self-test')
                         .setIcon('brain-circuit')
                         .onClick(async () => {
                             await generationService.generate({ mode: 'note', file });

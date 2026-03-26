@@ -129,7 +129,7 @@ export class SelfTestSettingTab extends PluginSettingTab {
 
         // API Key - per PROV-02, provider-specific placeholder
         new Setting(containerEl)
-            .setName('API Key')
+            .setName('API key')
             .setDesc('Stored in data.json inside your vault. Do not commit this file to a public git repository.')
             .addText(text => {
                 text.inputEl.type = 'password';

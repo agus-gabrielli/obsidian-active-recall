@@ -2,6 +2,9 @@
 
 Self Test generates open-ended questions from your notes so you can practice active recall - the study strategy that research consistently shows produces the strongest long-term retention. Pick any collection of notes, and the plugin builds a structured quiz you can answer out loud or in your head. It works with OpenAI, Google Gemini, and Anthropic Claude.
 
+![Self-test note example - part 1](docs/self_test_note_part1.png)
+![Self-test note example - part 2](docs/self_test_note_part2.png)
+
 ## Installation
 
 1. Open Obsidian and go to **Settings > Community Plugins**.
@@ -23,8 +26,7 @@ Self Test supports four ways to generate questions from your notes.
 Generates questions from all notes inside a selected folder. Useful when your notes on a topic are already organized in one place.
 
 Entry points:
-- Command palette: **Generate Self-Test for Current Folder** (runs on the folder containing your open note)
-- Right-click any folder in the file explorer and select **Generate Self-Test**
+- Command palette: **Generate self-test for current folder** (runs on the folder containing your open note)
 - Sidebar **Folders** tab: click **Generate for new folder**
 
 Output: `_self-test.md` inside the selected folder.
@@ -36,7 +38,7 @@ Output: `_self-test.md` inside the selected folder.
 Generates questions from all notes in your vault that share a specific tag. Useful when notes on a topic are spread across folders but consistently tagged.
 
 Entry points:
-- Command palette: **Generate Self-Test by Tag**
+- Command palette: **Generate self-test by tag**
 - Sidebar **Tags** tab: click **Generate for new tag**
 
 Output: `_self-tests/tags/<tag_name>.md` in your vault root.
@@ -48,7 +50,7 @@ Output: `_self-tests/tags/<tag_name>.md` in your vault root.
 Generates questions from a root note and all the notes it links to. You can optionally include depth-2 links - notes linked from the linked notes. Useful for a topic where you have a main overview note that connects to supporting notes.
 
 Entry points:
-- Command palette: **Generate Self-Test from Linked Notes**
+- Command palette: **Generate self-test from linked notes**
 - Sidebar **Links** tab: click **Generate from linked notes**
 
 Output: `_self-tests/links/<root_note_name>.md` in your vault root.
@@ -60,8 +62,8 @@ Output: `_self-tests/links/<root_note_name>.md` in your vault root.
 Generates questions for one note. Useful for a dense or important note you want to review on its own.
 
 Entry points:
-- Command palette: **Generate Self-Test for Current Note** (runs on the note you have open)
-- Right-click any note in the file explorer and select **Generate Self-Test**
+- Command palette: **Generate self-test for current note** (runs on the note you have open)
+- Right-click any note in the file explorer and select **Generate self-test**
 
 Output location depends on your setting: **same folder** places `<note-name>_self-test.md` next to the source note, **centralized** places it under `_self-tests/notes/`.
 

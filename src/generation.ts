@@ -328,6 +328,7 @@ export class GenerationService {
         if (spec.mode === 'tag') this.generatingTags.add(spec.tag.replace(/^#/, ''));
         if (spec.mode === 'links') this.generatingLinks.add(spec.rootFile.basename);
         this.statusBarItem.setText('Generating self-test...');
+        new Notice('Generating self-test...');
         try {
             let files: TFile[];
             let outputPath: string;

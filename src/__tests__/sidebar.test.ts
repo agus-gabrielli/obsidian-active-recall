@@ -157,7 +157,7 @@ describe('activateView', () => {
 });
 
 describe('file-menu context menu handler', () => {
-  it('when file is TFolder instance, adds "Generate Self-Test" item to menu', () => {
+  it('when file is TFolder instance, adds "Generate self-test" item to menu', () => {
     const folder = new TFolder('Notes', []);
     const menu = new Menu();
     const handler = buildContextMenuHandler(jest.fn());
@@ -166,7 +166,7 @@ describe('file-menu context menu handler', () => {
 
     const items = menu.getItems();
     expect(items).toHaveLength(1);
-    expect(items[0]!.title).toBe('Generate Self-Test');
+    expect(items[0]!.title).toBe('Generate self-test');
   });
 
   it('when file is TFile instance, does NOT add any item to menu', () => {

@@ -89,7 +89,7 @@ export function buildContextMenuHandler(
 
     menu.addItem((item) =>
       item
-        .setTitle('Generate Self-Test')
+        .setTitle('Generate self-test')
         .setIcon('brain-circuit')
         .onClick(async () => {
           await generate(file.path);
