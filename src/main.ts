@@ -1,14 +1,14 @@
 import { App, Notice, Plugin, TFile } from 'obsidian';
-import { ActiveRecallSettings, DEFAULT_SETTINGS, ActiveRecallSettingTab, migrateV1Settings } from './settings';
+import { SelfTestSettings, DEFAULT_SETTINGS, SelfTestSettingTab, migrateV1Settings } from './settings';
 import { GenerationService } from './generation';
-import { VIEW_TYPE_ACTIVE_RECALL, ActiveRecallSidebarView, ActiveTab, buildActivateView, buildContextMenuHandler } from './sidebar';
+import { VIEW_TYPE_SELF_TEST, SelfTestSidebarView, ActiveTab, buildActivateView, buildContextMenuHandler } from './sidebar';
 import { TagPickerModal, openLinkedNotesPicker } from './modals';
 import { isSelfTestFile } from './collectors';
 
-function getSidebarView(app: import('obsidian').App): ActiveRecallSidebarView | null {
-    const leaves = app.workspace.getLeavesOfType(VIEW_TYPE_ACTIVE_RECALL);
+function getSidebarView(app: import('obsidian').App): SelfTestSidebarView | null {
+    const leaves = app.workspace.getLeavesOfType(VIEW_TYPE_SELF_TEST);
     if (leaves.length > 0) {
-        const view = leaves[0]?.view as ActiveRecallSidebarView | undefined;
+        const view = leaves[0]?.view as SelfTestSidebarView | undefined;
         if (view && typeof view.refresh === 'function') return view;
     }
     return null;
@@ -18,7 +18,7 @@ function refreshSidebarIfOpen(app: import('obsidian').App): void {
     getSidebarView(app)?.refresh();
 }
 
-async function openSidebarWithTab(app: App, plugin: ActiveRecallPlugin, tab: ActiveTab): Promise<void> {
+async function openSidebarWithTab(app: App, plugin: SelfTestPlugin, tab: ActiveTab): Promise<void> {
     plugin.settings.activeTab = tab;
     await plugin.saveSettings();
     const activateView = buildActivateView(app);
@@ -27,27 +27,27 @@ async function openSidebarWithTab(app: App, plugin: ActiveRecallPlugin, tab: Act
     setTimeout(() => refreshSidebarIfOpen(app), 100);
 }
 
-export default class ActiveRecallPlugin extends Plugin {
-    settings: ActiveRecallSettings;
+export default class SelfTestPlugin extends Plugin {
+    settings: SelfTestSettings;
 
     async onload() {
         await this.loadSettings();
-        this.addSettingTab(new ActiveRecallSettingTab(this.app, this));
+        this.addSettingTab(new SelfTestSettingTab(this.app, this));
 
         const statusBarItem = this.addStatusBarItem();
         statusBarItem.setText('');
         const generationService = new GenerationService(this.app, this.settings, statusBarItem);
 
         this.registerView(
-            VIEW_TYPE_ACTIVE_RECALL,
-            (leaf) => new ActiveRecallSidebarView(leaf, this.app, this, generationService)
+            VIEW_TYPE_SELF_TEST,
+            (leaf) => new SelfTestSidebarView(leaf, this.app, this, generationService)
         );
 
         const activateView = buildActivateView(this.app);
 
         this.addCommand({
-            id: 'open-active-recall-panel',
-            name: 'Open Active Recall Panel',
+            id: 'open-self-test-panel',
+            name: 'Open Self Test Panel',
             callback: () => activateView(),
         });
 
@@ -67,7 +67,7 @@ export default class ActiveRecallPlugin extends Plugin {
             )
         );
 
-        this.addRibbonIcon('brain-circuit', 'Open Active Recall Panel', () => {
+        this.addRibbonIcon('brain-circuit', 'Open Self Test Panel', () => {
             activateView();
         });
 
@@ -180,13 +180,13 @@ export default class ActiveRecallPlugin extends Plugin {
     }
 
     onunload() {
-        this.app.workspace.detachLeavesOfType(VIEW_TYPE_ACTIVE_RECALL);
+        this.app.workspace.detachLeavesOfType(VIEW_TYPE_SELF_TEST);
     }
 
     async loadSettings() {
         const savedData = ((await this.loadData()) ?? {}) as Record<string, unknown>;
         migrateV1Settings(savedData);
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, savedData) as ActiveRecallSettings;
+        this.settings = Object.assign({}, DEFAULT_SETTINGS, savedData) as SelfTestSettings;
     }
 
     async saveSettings() {

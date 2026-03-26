@@ -4,7 +4,7 @@ import {
   getLastGeneratedDate,
   buildContextMenuHandler,
   buildActivateView,
-  ActiveRecallSidebarView,
+  SelfTestSidebarView,
 } from '../sidebar';
 import { DEFAULT_SETTINGS } from '../settings';
 
@@ -31,7 +31,7 @@ function createTestSidebar(opts: {
     generate: jest.fn().mockResolvedValue(undefined),
   };
   const leaf = createMockWorkspaceLeaf();
-  const view = new ActiveRecallSidebarView(
+  const view = new SelfTestSidebarView(
     leaf as never,
     app as never,
     mockPlugin as never,
@@ -187,11 +187,11 @@ describe('tabbed sidebar', () => {
     view.refresh();
 
     // contentEl.createDiv is called first to create the panel container
-    expect(view.contentEl.createDiv).toHaveBeenCalledWith({ cls: 'active-recall-panel' });
+    expect(view.contentEl.createDiv).toHaveBeenCalledWith({ cls: 'self-test-panel' });
 
     // The panel container (first createDiv call result) creates the tab bar div
     const panelContainer = (view.contentEl.createDiv as jest.Mock).mock.results[0]!.value;
-    expect(panelContainer.createDiv).toHaveBeenCalledWith({ cls: 'active-recall-tab-bar' });
+    expect(panelContainer.createDiv).toHaveBeenCalledWith({ cls: 'self-test-tab-bar' });
 
     // The tab bar div creates buttons for each tab
     const tabBarEl = panelContainer.createDiv.mock.results.find(
@@ -408,7 +408,7 @@ describe('tabbed sidebar', () => {
 
     const allDivCalls = collectCreateDivCalls(panelContainer);
     const spinnerDiv = allDivCalls.find(
-      (c) => (c[0] as { cls?: string })?.cls === 'active-recall-loading'
+      (c) => (c[0] as { cls?: string })?.cls === 'self-test-loading'
     );
     expect(spinnerDiv).toBeDefined();
   });
@@ -439,7 +439,7 @@ describe('tabbed sidebar', () => {
 
     const allDivCalls = collectCreateDivCalls(panelContainer);
     const spinnerDiv = allDivCalls.find(
-      (c) => (c[0] as { cls?: string })?.cls === 'active-recall-loading'
+      (c) => (c[0] as { cls?: string })?.cls === 'self-test-loading'
     );
     expect(spinnerDiv).toBeDefined();
   });
@@ -465,7 +465,7 @@ describe('tabbed sidebar', () => {
 
     const allElCalls = collectCreateElCalls(panelContainer);
     const trashBtn = allElCalls.find(
-      (c) => c[0] === 'button' && (c[1] as { cls?: string })?.cls?.includes('active-recall-trash-btn')
+      (c) => c[0] === 'button' && (c[1] as { cls?: string })?.cls?.includes('self-test-trash-btn')
     );
     expect(trashBtn).toBeDefined();
   });
@@ -492,7 +492,7 @@ describe('tabbed sidebar', () => {
 
     const allElCalls = collectCreateElCalls(panelContainer);
     const trashBtn = allElCalls.find(
-      (c) => c[0] === 'button' && (c[1] as { cls?: string })?.cls?.includes('active-recall-trash-btn')
+      (c) => c[0] === 'button' && (c[1] as { cls?: string })?.cls?.includes('self-test-trash-btn')
     );
     expect(trashBtn).toBeUndefined();
   });
@@ -517,7 +517,7 @@ describe('tabbed sidebar', () => {
 
     const allElCalls = collectCreateElCalls(panelContainer);
     const trashBtn = allElCalls.find(
-      (c) => c[0] === 'button' && (c[1] as { cls?: string })?.cls?.includes('active-recall-trash-btn')
+      (c) => c[0] === 'button' && (c[1] as { cls?: string })?.cls?.includes('self-test-trash-btn')
     );
     expect(trashBtn).toBeUndefined();
   });

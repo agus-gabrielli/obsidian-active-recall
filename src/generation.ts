@@ -1,5 +1,5 @@
 import { App, TFile, TFolder, Notice, requestUrl } from 'obsidian';
-import { ActiveRecallSettings, LLMProvider, PROVIDER_CONFIG } from './settings';
+import { SelfTestSettings, LLMProvider, PROVIDER_CONFIG } from './settings';
 import {
     CollectionSpec,
     collectNotesByTag,
@@ -78,7 +78,7 @@ export function splitIntoBatches(notes: NoteSource[]): NoteSource[][] {
     return batches;
 }
 
-export function buildBatchPrompt(notes: NoteSource[], settings: ActiveRecallSettings): string {
+export function buildBatchPrompt(notes: NoteSource[], settings: SelfTestSettings): string {
     const noteBlocks = notes
         .map((n) => `=== Note: ${n.name} ===\n${n.content}`)
         .join('\n\n');
@@ -95,7 +95,7 @@ export function buildBatchPrompt(notes: NoteSource[], settings: ActiveRecallSett
     return render(batchTemplate, vars);
 }
 
-export function buildSynthesisPrompt(partialOutputs: string[], settings: ActiveRecallSettings): string {
+export function buildSynthesisPrompt(partialOutputs: string[], settings: SelfTestSettings): string {
     const noteBlocks = partialOutputs
         .map((output, i) => `=== Partial Output ${i + 1} ===\n${output}`)
         .join('\n\n');
@@ -318,7 +318,7 @@ export class GenerationService {
 
     constructor(
         private app: App,
-        private settings: ActiveRecallSettings,
+        private settings: SelfTestSettings,
         private statusBarItem: { setText(text: string): void }
     ) {}
 

@@ -1,9 +1,9 @@
 {
-	"id": "ai-active-recall",
-	"name": "AI Active Recall",
+	"id": "self-test",
+	"name": "Self Test",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "Generate active recall self-tests from your notes using AI.",
+	"description": "Generate self-testing questions from your notes using AI to practice active recall.",
 	"author": "Agustin Gabrielli",
 	"authorUrl": "https://github.com/agus-gabrielli",
 	"fundingUrl": "",

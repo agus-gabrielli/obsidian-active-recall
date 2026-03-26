@@ -18,9 +18,9 @@ import {
   createMockApp,
   createMockStatusBarItem,
 } from '../__mocks__/obsidian';
-import type { ActiveRecallSettings } from '../settings';
+import type { SelfTestSettings } from '../settings';
 
-const defaultSettings: ActiveRecallSettings = {
+const defaultSettings: SelfTestSettings = {
   provider: 'openai',
   openai: { apiKey: 'sk-test', model: 'gpt-4o-mini' },
   gemini: { apiKey: '', model: 'gemini-2.5-flash' },
@@ -478,7 +478,7 @@ describe('GenerationService provider error label', () => {
     (app.vault.read as jest.Mock).mockResolvedValue('content');
     (requestUrl as jest.Mock).mockResolvedValueOnce({ status: 401, json: {} });
 
-    const geminiSettings: ActiveRecallSettings = {
+    const geminiSettings: SelfTestSettings = {
       provider: 'gemini',
       openai: { apiKey: '', model: 'gpt-4o-mini' },
       gemini: { apiKey: 'AIza-test', model: 'gemini-2.5-flash' },

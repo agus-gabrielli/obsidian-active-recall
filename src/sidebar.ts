@@ -1,10 +1,10 @@
 import { ItemView, WorkspaceLeaf, App, TFile, TFolder, Menu, TAbstractFile, setIcon } from 'obsidian';
 import { GenerationService } from './generation';
-import type ActiveRecallPlugin from './main';
+import type SelfTestPlugin from './main';
 import { TagPickerModal, FolderPickerModal, DeleteConfirmModal, openLinkedNotesPicker } from './modals';
 import { isSelfTestFile } from './collectors';
 
-export const VIEW_TYPE_ACTIVE_RECALL = 'active-recall-panel';
+export const VIEW_TYPE_SELF_TEST = 'self-test-panel';
 
 export type ActiveTab = 'folders' | 'tags' | 'links';
 
@@ -60,7 +60,7 @@ export function getLastGeneratedDate(file: { stat: { mtime: number } }): string 
  */
 export function buildActivateView(app: App): () => Promise<void> {
   return async () => {
-    const existing = app.workspace.getLeavesOfType(VIEW_TYPE_ACTIVE_RECALL);
+    const existing = app.workspace.getLeavesOfType(VIEW_TYPE_SELF_TEST);
     if (existing.length > 0) {
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       app.workspace.revealLeaf(existing[0]!);
@@ -68,7 +68,7 @@ export function buildActivateView(app: App): () => Promise<void> {
     }
     const leaf = app.workspace.getRightLeaf(false);
     if (!leaf) return;
-    await leaf.setViewState({ type: VIEW_TYPE_ACTIVE_RECALL, active: true });
+    await leaf.setViewState({ type: VIEW_TYPE_SELF_TEST, active: true });
     app.workspace.revealLeaf(leaf);
   };
 }
@@ -97,7 +97,7 @@ export function buildContextMenuHandler(
             const leaves = app.workspace.getLeavesOfType(viewType);
             if (leaves.length > 0) {
               // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-              const view = leaves[0]!.view as ActiveRecallSidebarView | null;
+              const view = leaves[0]!.view as SelfTestSidebarView | null;
               if (view && typeof view.refresh === 'function') {
                 view.refresh();
               }
@@ -111,13 +111,13 @@ export function buildContextMenuHandler(
 /**
  * The sidebar panel ItemView subclass.
  */
-export class ActiveRecallSidebarView extends ItemView {
+export class SelfTestSidebarView extends ItemView {
   private activeTab: ActiveTab;
 
   constructor(
     leaf: WorkspaceLeaf,
     private _app: App,
-    private plugin: ActiveRecallPlugin,
+    private plugin: SelfTestPlugin,
     private generationService: GenerationService
   ) {
     super(leaf);
@@ -125,11 +125,11 @@ export class ActiveRecallSidebarView extends ItemView {
   }
 
   getViewType(): string {
-    return VIEW_TYPE_ACTIVE_RECALL;
+    return VIEW_TYPE_SELF_TEST;
   }
 
   getDisplayText(): string {
-    return 'Active Recall';
+    return 'Self Test';
   }
 
   getIcon(): string {
@@ -155,22 +155,22 @@ export class ActiveRecallSidebarView extends ItemView {
   }
 
   private renderPanel(): void {
-    const container = this.contentEl.createDiv({ cls: 'active-recall-panel' });
+    const container = this.contentEl.createDiv({ cls: 'self-test-panel' });
 
     // Fixed header
-    const header = container.createDiv({ cls: 'active-recall-header' });
-    header.createEl('h3', { text: 'Active Recall', cls: 'active-recall-title' });
-    header.createEl('p', { text: 'Generate and review your self-tests.', cls: 'active-recall-description' });
+    const header = container.createDiv({ cls: 'self-test-header' });
+    header.createEl('h3', { text: 'Self Test', cls: 'self-test-title' });
+    header.createEl('p', { text: 'Generate and review your self-tests.', cls: 'self-test-description' });
 
     // Tab bar - three text tabs
-    const tabBar = container.createDiv({ cls: 'active-recall-tab-bar' });
+    const tabBar = container.createDiv({ cls: 'self-test-tab-bar' });
     for (const tab of ['folders', 'tags', 'links'] as const) {
       const label = tab.charAt(0).toUpperCase() + tab.slice(1);
       const btn = tabBar.createEl('button', {
         text: label,
         cls: tab === this.activeTab
-          ? 'active-recall-tab active-recall-tab--active'
-          : 'active-recall-tab',
+          ? 'self-test-tab self-test-tab--active'
+          : 'self-test-tab',
       });
       btn.addEventListener('click', () => {
         this.activeTab = tab;
@@ -180,7 +180,7 @@ export class ActiveRecallSidebarView extends ItemView {
     }
 
     // Panel content - separate DOM subtrees per mode
-    const panel = container.createDiv({ cls: 'active-recall-panel-content' });
+    const panel = container.createDiv({ cls: 'self-test-panel-content' });
     if (this.activeTab === 'folders') this.renderFoldersPanel(panel);
     else if (this.activeTab === 'tags') this.renderTagsPanel(panel);
     else this.renderLinksPanel(panel);
@@ -190,7 +190,7 @@ export class ActiveRecallSidebarView extends ItemView {
     // "Generate for new folder" button at top
     const newBtn = panel.createEl('button', {
       text: 'Generate for new folder',
-      cls: 'active-recall-btn active-recall-generate-new-btn',
+      cls: 'self-test-btn self-test-generate-new-btn',
     });
     newBtn.addEventListener('click', () => {
       new FolderPickerModal(this._app, (folderPath: string) => this.generateForFolder(folderPath)).open();
@@ -211,13 +211,13 @@ export class ActiveRecallSidebarView extends ItemView {
     if (withSelfTest.length === 0 && generatingAndNew.length === 0) {
       panel.createEl('p', {
         text: 'No self-tests generated yet. Use the button above to create one.',
-        cls: 'active-recall-empty-state',
+        cls: 'self-test-empty-state',
       });
       return;
     }
 
-    const section = panel.createDiv({ cls: 'active-recall-section' });
-    section.createEl('p', { text: 'Generated', cls: 'active-recall-section-label' });
+    const section = panel.createDiv({ cls: 'self-test-section' });
+    section.createEl('p', { text: 'Generated', cls: 'self-test-section-label' });
 
     // Placeholder rows for folders being generated that have no self-test yet
     for (const folderPath of generatingAndNew) {
@@ -241,7 +241,7 @@ export class ActiveRecallSidebarView extends ItemView {
     // "Generate for new tag" button
     const btn = panel.createEl('button', {
       text: 'Generate for new tag',
-      cls: 'active-recall-btn active-recall-generate-new-btn',
+      cls: 'self-test-btn self-test-generate-new-btn',
     });
     btn.addEventListener('click', () => {
       new TagPickerModal(this._app, (tag: string) => this.generateForTag(tag)).open();
@@ -265,13 +265,13 @@ export class ActiveRecallSidebarView extends ItemView {
     if (tagFiles.length === 0 && generatingAndNew.length === 0) {
       panel.createEl('p', {
         text: 'No tag-based self-tests yet. Use the button above to create one.',
-        cls: 'active-recall-empty-state',
+        cls: 'self-test-empty-state',
       });
       return;
     }
 
-    const section = panel.createDiv({ cls: 'active-recall-section' });
-    section.createEl('p', { text: 'Generated', cls: 'active-recall-section-label' });
+    const section = panel.createDiv({ cls: 'self-test-section' });
+    section.createEl('p', { text: 'Generated', cls: 'self-test-section-label' });
 
     // Placeholder rows for tags being generated with no file yet
     for (const tag of generatingAndNew) {
@@ -297,7 +297,7 @@ export class ActiveRecallSidebarView extends ItemView {
     // "Generate from linked notes" button
     const btn = panel.createEl('button', {
       text: 'Generate from linked notes',
-      cls: 'active-recall-btn active-recall-generate-new-btn',
+      cls: 'self-test-btn self-test-generate-new-btn',
     });
     btn.addEventListener('click', () => {
       openLinkedNotesPicker(this._app, (file: TFile, depth: 1 | 2) =>
@@ -321,13 +321,13 @@ export class ActiveRecallSidebarView extends ItemView {
     if (linkFiles.length === 0 && generatingAndNew.length === 0) {
       panel.createEl('p', {
         text: 'No link-based self-tests yet. Use the button above to create one.',
-        cls: 'active-recall-empty-state',
+        cls: 'self-test-empty-state',
       });
       return;
     }
 
-    const section = panel.createDiv({ cls: 'active-recall-section' });
-    section.createEl('p', { text: 'Generated', cls: 'active-recall-section-label' });
+    const section = panel.createDiv({ cls: 'self-test-section' });
+    section.createEl('p', { text: 'Generated', cls: 'self-test-section-label' });
 
     // Placeholder rows for links being generated with no file yet
     for (const basename of generatingAndNew) {
@@ -356,16 +356,16 @@ export class ActiveRecallSidebarView extends ItemView {
     onRegenerate: () => void,
     onDelete: (() => void) | null
   ): void {
-    const row = container.createDiv({ cls: 'active-recall-folder-row' });
-    const info = row.createDiv({ cls: 'active-recall-folder-info' });
-    info.createSpan({ text: name, cls: 'active-recall-folder-name' });
+    const row = container.createDiv({ cls: 'self-test-folder-row' });
+    const info = row.createDiv({ cls: 'self-test-folder-info' });
+    info.createSpan({ text: name, cls: 'self-test-folder-name' });
     if (date) {
-      info.createSpan({ text: date, cls: 'active-recall-date' });
+      info.createSpan({ text: date, cls: 'self-test-date' });
     }
 
     // Clickable row - opens file in editor
     if (file) {
-      row.addClass('active-recall-row--clickable');
+      row.addClass('self-test-row--clickable');
       row.addEventListener('click', (evt: MouseEvent) => {
         if ((evt.target as HTMLElement).closest('button')) return;
         this._app.workspace.openLinkText(file.path, '', false);
@@ -373,18 +373,18 @@ export class ActiveRecallSidebarView extends ItemView {
     }
 
     if (isGenerating) {
-      const loading = row.createDiv({ cls: 'active-recall-loading' });
-      loading.createSpan({ cls: 'active-recall-spinner' });
-      loading.createSpan({ text: 'Generating...', cls: 'active-recall-loading-text' });
+      const loading = row.createDiv({ cls: 'self-test-loading' });
+      loading.createSpan({ cls: 'self-test-spinner' });
+      loading.createSpan({ text: 'Generating...', cls: 'self-test-loading-text' });
     } else {
       const btnText = file ? 'Regenerate' : 'Generate';
-      const btn = row.createEl('button', { text: btnText, cls: 'active-recall-btn' });
+      const btn = row.createEl('button', { text: btnText, cls: 'self-test-btn' });
       btn.addEventListener('click', onRegenerate);
     }
 
     if (!isGenerating && file) {
       const trashBtn = row.createEl('button', {
-        cls: 'active-recall-trash-btn clickable-icon',
+        cls: 'self-test-trash-btn clickable-icon',
         attr: { 'aria-label': 'Delete self-test' },
       });
       setIcon(trashBtn, 'trash-2');
@@ -404,12 +404,12 @@ export class ActiveRecallSidebarView extends ItemView {
 
   private showGeneratingToast(): void {
     // Remove any existing toast
-    document.querySelector('.active-recall-toast')?.remove();
+    document.querySelector('.self-test-toast')?.remove();
 
     const toast = document.createElement('div');
-    toast.className = 'active-recall-toast';
+    toast.className = 'self-test-toast';
     const spinner = document.createElement('span');
-    spinner.className = 'active-recall-spinner';
+    spinner.className = 'self-test-spinner';
     toast.appendChild(spinner);
     const text = document.createElement('span');
     text.textContent = 'Generating self-test...';
@@ -417,14 +417,14 @@ export class ActiveRecallSidebarView extends ItemView {
     document.body.appendChild(toast);
 
     // Trigger entrance animation
-    requestAnimationFrame(() => toast.classList.add('active-recall-toast--visible'));
+    requestAnimationFrame(() => toast.classList.add('self-test-toast--visible'));
   }
 
   private hideGeneratingToast(): void {
-    const toast = document.querySelector('.active-recall-toast');
+    const toast = document.querySelector('.self-test-toast');
     if (!toast) return;
-    toast.classList.remove('active-recall-toast--visible');
-    toast.classList.add('active-recall-toast--hiding');
+    toast.classList.remove('self-test-toast--visible');
+    toast.classList.add('self-test-toast--hiding');
     setTimeout(() => toast.remove(), 400);
   }
 

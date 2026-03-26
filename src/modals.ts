@@ -31,13 +31,13 @@ export class TagPickerModal extends SuggestModal<string> {
     renderSuggestion(tag: string, el: HTMLElement): void {
         const depth = tag.split('/').length - 1;
         const displayName = depth > 0 ? tag.split('/').pop()! : tag;
-        const container = el.createDiv({ cls: 'active-recall-tag-suggestion' });
+        const container = el.createDiv({ cls: 'self-test-tag-suggestion' });
         if (depth > 0) {
             container.style.paddingLeft = `${depth * 16}px`;
         }
         container.createSpan({ text: depth > 0 ? displayName : tag });
         const count = this.tagCounts.get(tag) ?? 0;
-        container.createSpan({ text: ` (${count})`, cls: 'active-recall-tag-count' });
+        container.createSpan({ text: ` (${count})`, cls: 'self-test-tag-count' });
     }
 
     onChooseSuggestion(tag: string): void {
@@ -101,12 +101,12 @@ export class NotePickerModal extends FuzzySuggestModal<TFile> {
 
     renderSuggestion(match: { item: TFile }, el: HTMLElement): void {
         const file = match.item;
-        const container = el.createDiv({ cls: 'active-recall-note-suggestion' });
-        container.createDiv({ text: file.basename, cls: 'active-recall-note-name' });
+        const container = el.createDiv({ cls: 'self-test-note-suggestion' });
+        container.createDiv({ text: file.basename, cls: 'self-test-note-name' });
         // Per D-10: dimmed path underneath basename, matching Quick Switcher pattern
         const parentPath = file.parent ? file.parent.path : '';
         if (parentPath && parentPath !== '/') {
-            container.createDiv({ text: parentPath, cls: 'active-recall-note-path' });
+            container.createDiv({ text: parentPath, cls: 'self-test-note-path' });
         }
     }
 
@@ -154,14 +154,14 @@ export class LinkConfirmModal extends Modal {
         }
 
         // Depth toggle
-        const checkboxContainer = contentEl.createDiv({ cls: 'active-recall-depth-toggle' });
+        const checkboxContainer = contentEl.createDiv({ cls: 'self-test-depth-toggle' });
         const checkbox = checkboxContainer.createEl('input', { type: 'checkbox' });
         checkbox.id = 'depth-2-toggle';
         const label = checkboxContainer.createEl('label', { text: ' Include links of links (depth 2)' });
         label.setAttribute('for', 'depth-2-toggle');
 
         // Preview count
-        const previewEl = contentEl.createEl('p', { cls: 'active-recall-link-preview' });
+        const previewEl = contentEl.createEl('p', { cls: 'self-test-link-preview' });
         const updatePreview = () => {
             const collected = collectNotesByLinks(this.app as App, this.rootFile, this.depth);
             previewEl.setText(`${collected.length} note${collected.length === 1 ? '' : 's'} will be collected.`);
@@ -176,7 +176,7 @@ export class LinkConfirmModal extends Modal {
         // Generate button
         const generateBtn = contentEl.createEl('button', {
             text: 'Generate',
-            cls: 'mod-cta active-recall-generate-btn',
+            cls: 'mod-cta self-test-generate-btn',
         });
         generateBtn.addEventListener('click', () => {
             this.onGenerate(this.rootFile, this.depth);
@@ -217,7 +217,7 @@ export class DeleteConfirmModal extends Modal {
         contentEl.createEl('h3', { text: 'Delete self-test?' });
         contentEl.createEl('p', { text: `This will delete: ${this.filePath}` });
 
-        const btnContainer = contentEl.createDiv({ cls: 'active-recall-confirm-buttons' });
+        const btnContainer = contentEl.createDiv({ cls: 'self-test-confirm-buttons' });
 
         const cancelBtn = btnContainer.createEl('button', { text: 'Cancel' });
         cancelBtn.addEventListener('click', () => this.close());

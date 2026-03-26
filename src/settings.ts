@@ -1,5 +1,5 @@
 import { App, PluginSettingTab, Setting } from 'obsidian';
-import type ActiveRecallPlugin from './main';
+import type SelfTestPlugin from './main';
 
 export type LLMProvider = 'openai' | 'gemini' | 'anthropic';
 
@@ -37,7 +37,7 @@ export const PROVIDER_CONFIG: Record<LLMProvider, ProviderMeta> = {
     },
 };
 
-export interface ActiveRecallSettings {
+export interface SelfTestSettings {
     provider: LLMProvider;
     openai: { apiKey: string; model: string };
     gemini: { apiKey: string; model: string };
@@ -51,7 +51,7 @@ export interface ActiveRecallSettings {
     activeTab: 'folders' | 'tags' | 'links';
 }
 
-export const DEFAULT_SETTINGS: ActiveRecallSettings = {
+export const DEFAULT_SETTINGS: SelfTestSettings = {
     provider: 'openai',
     openai: { apiKey: '', model: 'gpt-5.4-mini' },
     gemini: { apiKey: '', model: 'gemini-2.5-flash' },
@@ -91,10 +91,10 @@ export function migrateV1Settings(savedData: Record<string, unknown>): void {
     delete savedData['customModel'];
 }
 
-export class ActiveRecallSettingTab extends PluginSettingTab {
-    plugin: ActiveRecallPlugin;
+export class SelfTestSettingTab extends PluginSettingTab {
+    plugin: SelfTestPlugin;
 
-    constructor(app: App, plugin: ActiveRecallPlugin) {
+    constructor(app: App, plugin: SelfTestPlugin) {
         super(app, plugin);
         this.plugin = plugin;
     }

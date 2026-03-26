@@ -1,30 +1,30 @@
-.active-recall-panel {
+.self-test-panel {
   padding: 8px 12px;
 }
 
-.active-recall-header {
+.self-test-header {
   margin-bottom: 16px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.active-recall-title {
+.self-test-title {
   margin: 0 0 4px 0;
   font-size: 1em;
   font-weight: 600;
 }
 
-.active-recall-description {
+.self-test-description {
   margin: 0;
   font-size: 0.8em;
   color: var(--text-muted);
 }
 
-.active-recall-section {
+.self-test-section {
   margin-bottom: 20px;
 }
 
-.active-recall-section-label {
+.self-test-section-label {
   margin: 0 0 6px 0;
   font-size: 0.75em;
   font-weight: 600;
@@ -33,7 +33,7 @@
   color: var(--text-muted);
 }
 
-.active-recall-folder-row {
+.self-test-folder-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -42,27 +42,27 @@
   gap: 8px;
 }
 
-.active-recall-folder-info {
+.self-test-folder-info {
   display: flex;
   flex-direction: column;
   min-width: 0;
   flex: 1;
 }
 
-.active-recall-folder-name {
+.self-test-folder-name {
   font-size: 0.9em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.active-recall-date {
+.self-test-date {
   font-size: 0.75em;
   color: var(--text-muted);
   margin-top: 2px;
 }
 
-.active-recall-btn {
+.self-test-btn {
   flex-shrink: 0;
   font-size: 0.8em;
   padding: 3px 10px;
@@ -73,7 +73,7 @@
   box-sizing: border-box;
 }
 
-.active-recall-loading {
+.self-test-loading {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -84,33 +84,33 @@
   box-sizing: border-box;
 }
 
-.active-recall-spinner {
+.self-test-spinner {
   display: inline-block;
   width: 14px;
   height: 14px;
   border: 2px solid var(--background-modifier-border);
   border-top-color: var(--text-muted);
   border-radius: 50%;
-  animation: active-recall-spin 0.8s linear infinite;
+  animation: self-test-spin 0.8s linear infinite;
 }
 
-@keyframes active-recall-spin {
+@keyframes self-test-spin {
   to { transform: rotate(360deg); }
 }
 
-.active-recall-loading-text {
+.self-test-loading-text {
   font-size: 0.8em;
   color: var(--text-muted);
 }
 
-.active-recall-tab-bar {
+.self-test-tab-bar {
   display: flex;
   gap: 0;
   margin-bottom: 12px;
   border-bottom: 1px solid var(--background-modifier-border);
 }
 
-.active-recall-tab {
+.self-test-tab {
   flex: 1;
   padding: 6px 0;
   background: none;
@@ -123,38 +123,38 @@
   text-align: center;
 }
 
-.active-recall-tab:hover {
+.self-test-tab:hover {
   color: var(--text-normal);
 }
 
-.active-recall-tab--active {
+.self-test-tab--active {
   color: var(--text-normal);
   font-weight: 600;
   border-bottom-color: var(--interactive-accent);
 }
 
-.active-recall-row--clickable {
+.self-test-row--clickable {
   cursor: pointer;
 }
 
-.active-recall-row--clickable:hover {
+.self-test-row--clickable:hover {
   background: var(--background-modifier-hover);
   border-radius: 4px;
 }
 
-.active-recall-generate-new-btn {
+.self-test-generate-new-btn {
   width: 100%;
   margin-bottom: 12px;
 }
 
-.active-recall-empty-state {
+.self-test-empty-state {
   font-size: 0.85em;
   color: var(--text-muted);
   text-align: center;
   padding: 20px 8px;
 }
 
-.active-recall-toast {
+.self-test-toast {
   position: fixed;
   top: 50%;
   left: 50%;
@@ -174,18 +174,18 @@
   pointer-events: none;
 }
 
-.active-recall-toast--visible {
+.self-test-toast--visible {
   opacity: 1;
   transform: translate(-50%, -50%) scale(1);
 }
 
-.active-recall-toast--hiding {
+.self-test-toast--hiding {
   opacity: 0;
   transform: translate(-50%, -50%) scale(0.95);
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
-.active-recall-trash-btn {
+.self-test-trash-btn {
   flex-shrink: 0;
   background: none;
   border: none;
@@ -198,29 +198,29 @@
   justify-content: center;
 }
 
-.active-recall-trash-btn:hover {
+.self-test-trash-btn:hover {
   color: var(--text-error);
   background: var(--background-modifier-hover);
 }
 
-.active-recall-confirm-buttons {
+.self-test-confirm-buttons {
   display: flex;
   justify-content: flex-end;
   gap: 8px;
   margin-top: 16px;
 }
 
-.active-recall-note-suggestion {
+.self-test-note-suggestion {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.active-recall-note-name {
+.self-test-note-name {
   font-size: 0.9em;
 }
 
-.active-recall-note-path {
+.self-test-note-path {
   font-size: 0.75em;
   color: var(--text-muted);
 }

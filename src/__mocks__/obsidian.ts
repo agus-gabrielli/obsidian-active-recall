@@ -165,7 +165,7 @@ export function makeMockEl(): {
   };
 }
 
-// Minimal PluginSettingTab base class - allows ActiveRecallSettingTab to extend it in tests
+// Minimal PluginSettingTab base class - allows SelfTestSettingTab to extend it in tests
 export class PluginSettingTab {
   app: unknown;
   containerEl: {
@@ -191,7 +191,7 @@ export class Setting {
   addTextArea(_cb: (text: { setPlaceholder: () => unknown; setValue: () => unknown; inputEl: { addEventListener: () => unknown } }) => void): this { return this; }
 }
 
-// Minimal ItemView base class - allows ActiveRecallSidebarView to extend it in tests
+// Minimal ItemView base class - allows SelfTestSidebarView to extend it in tests
 export class ItemView {
   contentEl: ReturnType<typeof makeMockEl>;
   leaf: WorkspaceLeaf;
