@@ -1,8 +1,8 @@
-# Obsidian Active Recall Plugin
+# Self Test - Obsidian Plugin
 
 ## What This Is
 
-An Obsidian community plugin that helps users learn from their own notes through active recall. It reads markdown notes from a selected folder, sends the content to an LLM, and generates a `_self-test.md` file with open-ended questions, hints, reference answers, and a concept map — all in standard Obsidian markdown. The plugin targets publication to the Obsidian community plugin store.
+An Obsidian community plugin that helps users learn from their own notes through active recall. It reads markdown notes from a selected folder, tag, linked notes, or single note, sends the content to an LLM, and generates a self-test file with open-ended questions, hints, reference answers, and a concept map - all in standard Obsidian markdown. Published to the Obsidian community plugin store.
 
 ## Core Value
 
@@ -44,7 +44,7 @@ Users can generate a structured self-test from any folder of notes in one click,
 - [x] Tabbed sidebar with Folders/Tags/Links modes, clickable entries, folder picker, auto-open from commands, generating toast (Phase 10)
 - [x] Trash icon delete on sidebar rows with confirmation modal (Phase 11)
 - [x] Native FuzzySuggestModal two-step linked notes picker replacing custom modal (Phase 11)
-- [ ] Final release to Obsidian community plugin store
+- [x] Final release to Obsidian community plugin store (Phase 12)
 
 ### Out of Scope
 
@@ -82,4 +82,4 @@ Users can generate a structured self-test from any folder of notes in one click,
 | Standard `.md` output only | Full portability; no lock-in to plugin-specific rendering | — Pending |
 
 ---
-*Last updated: 2026-03-25 after Phase 11 completion (sidebar delete & native picker)*
+*Last updated: 2026-03-26 after Phase 12 completion (v2 release - renamed to Self Test, store submission)*
