@@ -208,18 +208,21 @@ Plans:
 - [x] 11-03-PLAN.md - Production build and human-verify delete + native picker in Obsidian (Wave 3)
 
 ### Phase 12: v2.0 Release
-**Goal**: README documents multi-provider setup and all new collection modes clearly; the plugin passes Obsidian community store review requirements and the submission PR is open against obsidianmd/obsidian-releases
+**Goal**: Plugin renamed from "AI Active Recall" to "Self Test"; README documents multi-provider setup and all new collection modes clearly; the plugin passes Obsidian community store review requirements and the submission PR is open against obsidianmd/obsidian-releases
 **Depends on**: Phase 11
 **Requirements**: DIST-03, DIST-04
 **Success Criteria** (what must be TRUE):
-  1. README includes setup instructions for Google AI Studio and Anthropic API keys, with links to where users get them; existing OpenAI instructions remain accurate
-  2. README documents all four generation modes (folder, tag, linked notes, single note) with enough detail for a non-technical user to use each one
-  3. manifest.json version is bumped to 2.0.0; GitHub release tag matches exactly (no `v` prefix); all store submission checklist items pass
-  4. PR is open against obsidianmd/obsidian-releases with the required files (manifest.json, main.js, styles.css) attached to the GitHub release
-**Plans**: TBD
+  1. Plugin renamed to "Self Test" across manifest.json, package.json, README, CSS class prefixes (active-recall-* -> self-test-*), and all user-facing strings
+  2. README includes setup instructions for Google AI Studio and Anthropic API keys, with links to where users get them; existing OpenAI instructions remain accurate
+  3. README documents all four generation modes (folder, tag, linked notes, single note) with enough detail for a non-technical user to use each one
+  4. manifest.json version is 1.0.0 (first public release); GitHub release tag matches exactly (no `v` prefix); all store submission checklist items pass
+  5. PR is open against obsidianmd/obsidian-releases with the required files (manifest.json, main.js, styles.css) attached to the GitHub release
+**Plans**: 3 plans
 
 Plans:
-- [ ] TBD
+- [ ] 12-01-PLAN.md - Atomic rename from "AI Active Recall" to "Self Test" across all source, test, config, CSS files + LICENSE update (Wave 1)
+- [ ] 12-02-PLAN.md - Rewrite README with multi-provider setup and all four generation modes (Wave 1)
+- [ ] 12-03-PLAN.md - Production build, GitHub release update, human-verify in Obsidian, store submission PR (Wave 2)
 
 ---
 
@@ -241,7 +244,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7 -> 8 -> 9 -> 10
 | 9. Flexible Note Collection | 2/3 | In Progress|  |
 | 10. Sidebar Redesign | 4/4 | Complete    | 2026-03-26 |
 | 11. Sidebar Delete and Native Picker | 3/3 | Complete    | 2026-03-26 |
-| 12. v2.0 Release | 0/TBD | Not started | - |
+| 12. v2.0 Release | 0/3 | Not started | - |
 
 ---
 
