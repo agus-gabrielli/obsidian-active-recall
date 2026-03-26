@@ -42,6 +42,8 @@ Users can generate a structured self-test from any folder of notes in one click,
 - [x] Generation by linked notes from root/MOC note - bidirectional (outgoing + backlinks), depth 1 or 2 (Phase 9)
 - [x] Single note generation - via command palette and file context menu (Phase 9)
 - [x] Tabbed sidebar with Folders/Tags/Links modes, clickable entries, folder picker, auto-open from commands, generating toast (Phase 10)
+- [x] Trash icon delete on sidebar rows with confirmation modal (Phase 11)
+- [x] Native FuzzySuggestModal two-step linked notes picker replacing custom modal (Phase 11)
 - [ ] Final release to Obsidian community plugin store
 
 ### Out of Scope
@@ -59,7 +61,7 @@ Users can generate a structured self-test from any folder of notes in one click,
 - LLM integration: user-provided API key, no bundled access; keeps plugin free and privacy-respecting
 - Output format: all generated content is standard Obsidian-flavored markdown, fully portable if plugin is removed
 - The testing effect (cognitive science): retrieval practice strengthens long-term retention more than passive review — this is the research motivation behind the plugin
-- V2 spaced repetition metadata will live in `_self-test.md` YAML frontmatter (`last_review`, `next_review`, `review_count`, `review_interval_days`) — architecture should not conflict with this
+- Spaced repetition frontmatter fields were removed in Phase 11 (deferred to future scope); only `source_mode`, `source`, `source_notes` remain
 
 ## Constraints
 
@@ -80,4 +82,4 @@ Users can generate a structured self-test from any folder of notes in one click,
 | Standard `.md` output only | Full portability; no lock-in to plugin-specific rendering | — Pending |
 
 ---
-*Last updated: 2026-03-26 after Phase 10 completion (sidebar redesign)*
+*Last updated: 2026-03-25 after Phase 11 completion (sidebar delete & native picker)*
